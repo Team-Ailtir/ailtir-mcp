@@ -1,11 +1,11 @@
-import base64
+import pathlib
 
 import httpx
 import structlog
 from mcp.server.fastmcp import Context
 from mcp.server.session import ServerSession
 
-from ailtir_mcp.auth import current_token
+from ailtir_mcp.config import settings
 from ailtir_mcp.mcp import AppContext, mcp
 
 _log = structlog.get_logger(__name__)
@@ -13,29 +13,31 @@ _log = structlog.get_logger(__name__)
 
 @mcp.tool()
 async def upload(
-    file_name: str,
-    file_content_base64: str,
+    file_path: str,
     ctx: Context[ServerSession, AppContext],
 ) -> str:
     """Upload a ZIP archive of documents to Ailtir storage.
 
     Args:
-        file_name: Name of the ZIP file, e.g. 'tender_docs.zip'.
-        file_content_base64: Base64-encoded content of the ZIP file.
+        file_path: Absolute path to the ZIP file to upload.
     """
-    await ctx.info(f"Uploading {file_name}")
+    path = pathlib.Path(file_path)
+    if not path.is_absolute():
+        return "Error: file_path must be an absolute path."
+    if not path.exists():
+        return f"Error: file not found: {file_path}"
+    if not path.is_file():
+        return f"Error: not a file: {file_path}"
 
-    try:
-        content = base64.b64decode(file_content_base64, validate=True)
-    except Exception:
-        return "Error: file_content_base64 is not valid base64."
+    await ctx.info(f"Uploading {path.name}")
 
-    # Register with mcp-api to get a server-assigned kb_id and presigned upload URL.
-    token = current_token.get()
+    content = path.read_bytes()
+    token = settings.ailtir_mcp_secret
     http = ctx.request_context.lifespan_context.http
+
     reg_resp = await http.post(
         "/kb",
-        json={"file_name": file_name},
+        json={"file_name": path.name},
         headers={"Authorization": f"Bearer {token}"},
     )
     reg_resp.raise_for_status()

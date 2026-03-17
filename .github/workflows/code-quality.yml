@@ -20,14 +20,6 @@ jobs:
 
       - uses: astral-sh/setup-uv@v3
 
-      - name: aws codeartifact login
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.DEPLOYER_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.DEPLOYER_AWS_SECRET_ACCESS_KEY }}
-        run: |
-          CODEARTIFACT_TOKEN=$(aws codeartifact get-authorization-token --domain pypi-ailtir --region eu-west-1 --query authorizationToken --output text)
-          echo "UV_INDEX_URL=https://aws:${CODEARTIFACT_TOKEN}@pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple" >> $GITHUB_ENV
-
       - name: install dev dependencies
         run: make install-dev
 
@@ -35,7 +27,6 @@ jobs:
         run: make checks
 
       - name: unit tests
+        env:
+          AILTIR_MCP_SECRET: test-token-for-ci
         run: make tests-unit
-
-      - name: docker build
-        run: make docker-build

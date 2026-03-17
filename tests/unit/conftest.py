@@ -3,7 +3,6 @@ from unittest.mock import AsyncMock, MagicMock
 import httpx
 import pytest
 
-from ailtir_mcp.auth import current_token
 from ailtir_mcp.mcp import AppContext
 
 
@@ -27,10 +26,3 @@ def mock_ctx(app_context: AppContext) -> MagicMock:
     ctx.report_progress = AsyncMock()
     ctx.request_context.lifespan_context = app_context
     return ctx
-
-
-@pytest.fixture(autouse=True)
-def set_current_token() -> None:  # type: ignore[return]
-    token = current_token.set("test-token-abc123")
-    yield  # type: ignore[misc]
-    current_token.reset(token)

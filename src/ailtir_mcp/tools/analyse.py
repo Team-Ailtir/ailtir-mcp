@@ -2,7 +2,7 @@ import structlog
 from mcp.server.fastmcp import Context
 from mcp.server.session import ServerSession
 
-from ailtir_mcp.auth import current_token
+from ailtir_mcp.config import settings
 from ailtir_mcp.mcp import AppContext, mcp
 
 _log = structlog.get_logger(__name__)
@@ -23,7 +23,7 @@ async def analyse(
     """
     await ctx.info(f"Starting analysis for kb_id: {kb_id}")
 
-    token = current_token.get()
+    token = settings.ailtir_mcp_secret
     http = ctx.request_context.lifespan_context.http
     resp = await http.post(
         f"/kb/{kb_id}/analyse",

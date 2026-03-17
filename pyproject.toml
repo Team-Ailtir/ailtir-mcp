@@ -4,20 +4,29 @@ version = "0.1.0"
 description = "Ailtir MCP server — upload, analyse, list, and chat with knowledge bases"
 readme = "README.md"
 requires-python = ">=3.13"
+license = { text = "MIT" }
+keywords = ["mcp", "ailtir", "knowledge-base", "rag"]
+classifiers = [
+    "Programming Language :: Python :: 3.13",
+    "License :: OSI Approved :: MIT License",
+]
 dependencies = [
-    "alogging>=2.2.0",
-    "fastapi>=0.135.1",
     "httpx>=0.28.1",
     "mcp[cli]>=1.9.0",
     "pydantic-settings>=2.10.1",
     "structlog>=25.4.0",
-    "uvicorn>=0.35.0",
 ]
+
+[project.scripts]
+ailtir-mcp = "ailtir_mcp.server:main"
+
+[project.urls]
+Homepage = "https://ailtir.ai"
+Repository = "https://github.com/Team-Ailtir/ailtir-mcp"
 
 [dependency-groups]
 dev = [
     "bandit>=1.8.6",
-    "boto3-stubs[s3]>=1.39.9",
     "mypy>=1.16.0",
     "pytest>=8.4.0",
     "pytest-asyncio>=1.0.0",

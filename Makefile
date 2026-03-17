@@ -1,6 +1,3 @@
-GIT_REPO := $(shell basename -s .git $(shell git config --get remote.origin.url))
-GIT_SHA  := $(shell git rev-parse --short HEAD)
-
 .DEFAULT_GOAL := help
 
 .PHONY: help
@@ -18,25 +15,7 @@ checks-fix: format-fix lint-fix ## Fix all fixable issues
 clean: ## Clean cache and build artefacts
 	find . -type d -name __pycache__ -not -path "./.venv/*" -exec rm -rf {} +
 	find . -type f -name "*.pyc" -not -path "./.venv/*" -exec rm -rf {} +
-
-.PHONY: docker-build
-docker-build: ## Build Docker image
-	DOCKER_BUILDKIT=1 docker build \
-		--secret id=UV_INDEX_URL,env=UV_INDEX_URL \
-		. -t $(GIT_REPO)
-	docker tag $(GIT_REPO):latest $(GIT_REPO):$(GIT_SHA)
-
-define get_aws_repo
-  $(shell aws ecr describe-repositories | jq -r ".repositories[] | select(.repositoryName | contains(\"${GIT_REPO}-\")) | .repositoryUri")
-endef
-
-.PHONY: docker-push
-docker-push: ## Push Docker image to ECR
-	$(eval AWS_REPO := $(call get_aws_repo))
-	docker tag $(GIT_REPO):latest $(AWS_REPO):$(GIT_SHA)
-	docker push $(AWS_REPO):$(GIT_SHA)
-	docker tag $(GIT_REPO):latest $(AWS_REPO):latest
-	docker push $(AWS_REPO):latest
+	rm -rf dist/
 
 .PHONY: format-check
 format-check: ## Check formatting with ruff
@@ -73,6 +52,11 @@ security-check: ## Security scan with bandit
 .PHONY: serve
 serve: ## Run the MCP server
 	uv run --frozen --no-dev python -m ailtir_mcp.server
+
+.PHONY: publish
+publish: ## Build and publish to PyPI
+	uv build
+	uv publish
 
 .PHONY: tests
 tests: tests-unit ## Run all tests

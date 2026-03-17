@@ -7,19 +7,15 @@ name = "ailtir-mcp"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
-    { name = "alogging" },
-    { name = "fastapi" },
     { name = "httpx" },
     { name = "mcp", extra = ["cli"] },
     { name = "pydantic-settings" },
     { name = "structlog" },
-    { name = "uvicorn" },
 ]
 
 [package.dev-dependencies]
 dev = [
     { name = "bandit" },
-    { name = "boto3-stubs", extra = ["s3"] },
     { name = "mypy" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
@@ -30,37 +26,21 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "alogging", specifier = ">=2.2.0" },
-    { name = "fastapi", specifier = ">=0.135.1" },
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "mcp", extras = ["cli"], specifier = ">=1.9.0" },
     { name = "pydantic-settings", specifier = ">=2.10.1" },
     { name = "structlog", specifier = ">=25.4.0" },
-    { name = "uvicorn", specifier = ">=0.35.0" },
 ]
 
 [package.metadata.requires-dev]
 dev = [
     { name = "bandit", specifier = ">=1.8.6" },
-    { name = "boto3-stubs", extras = ["s3"], specifier = ">=1.39.9" },
     { name = "mypy", specifier = ">=1.16.0" },
     { name = "pytest", specifier = ">=8.4.0" },
     { name = "pytest-asyncio", specifier = ">=1.0.0" },
     { name = "pytest-cov", specifier = ">=6.2.1" },
     { name = "respx", specifier = ">=0.22.0" },
     { name = "ruff", specifier = ">=0.11.13" },
-]
-
-[[package]]
-name = "alogging"
-version = "2.2.0"
-source = { registry = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple" }
-dependencies = [
-    { name = "structlog" },
-]
-sdist = { url = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple/alogging/2.2.0/alogging-2.2.0.tar.gz", hash = "sha256:00cf807505a16d8e5fe8666fc7cdf723662af54e0c5c71129733983173c54ce6" }
-wheels = [
-    { url = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple/alogging/2.2.0/alogging-2.2.0-py3-none-any.whl", hash = "sha256:e6f8f9e81c4ec88310292fa24eafdbd98b4ac935f19ac10d9363a96c4f9bc0e9" },
 ]
 
 [[package]]
@@ -115,36 +95,6 @@ dependencies = [
 sdist = { url = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple/bandit/1.9.4/bandit-1.9.4.tar.gz", hash = "sha256:b589e5de2afe70bd4d53fa0c1da6199f4085af666fde00e8a034f152a52cd628" }
 wheels = [
     { url = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple/bandit/1.9.4/bandit-1.9.4-py3-none-any.whl", hash = "sha256:f89ffa663767f5a0585ea075f01020207e966a9c0f2b9ef56a57c7963a3f6f8e" },
-]
-
-[[package]]
-name = "boto3-stubs"
-version = "1.42.69"
-source = { registry = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple" }
-dependencies = [
-    { name = "botocore-stubs" },
-    { name = "types-s3transfer" },
-]
-sdist = { url = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple/boto3-stubs/1.42.69/boto3_stubs-1.42.69.tar.gz", hash = "sha256:52ccd645a34d2b4e97af8f44dbaffbb854a1de52610e9502c284bfb24e6d8962" }
-wheels = [
-    { url = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple/boto3-stubs/1.42.69/boto3_stubs-1.42.69-py3-none-any.whl", hash = "sha256:021360b519ac54822eb00f125b0c4292ad2a1869ae8e1d0c6c097db99215d41b" },
-]
-
-[package.optional-dependencies]
-s3 = [
-    { name = "mypy-boto3-s3" },
-]
-
-[[package]]
-name = "botocore-stubs"
-version = "1.42.41"
-source = { registry = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple" }
-dependencies = [
-    { name = "types-awscrt" },
-]
-sdist = { url = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple/botocore-stubs/1.42.41/botocore_stubs-1.42.41.tar.gz", hash = "sha256:dbeac2f744df6b814ce83ec3f3777b299a015cbea57a2efc41c33b8c38265825" }
-wheels = [
-    { url = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple/botocore-stubs/1.42.41/botocore_stubs-1.42.41-py3-none-any.whl", hash = "sha256:9423110fb0e391834bd2ed44ae5f879d8cb370a444703d966d30842ce2bcb5f0" },
 ]
 
 [[package]]
@@ -342,22 +292,6 @@ wheels = [
     { url = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple/cryptography/46.0.5/cryptography-46.0.5-cp38-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:ced80795227d70549a411a4ab66e8ce307899fad2220ce5ab2f296e687eacde9" },
     { url = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple/cryptography/46.0.5/cryptography-46.0.5-cp38-abi3-win32.whl", hash = "sha256:02f547fce831f5096c9a567fd41bc12ca8f11df260959ecc7c3202555cc47a72" },
     { url = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple/cryptography/46.0.5/cryptography-46.0.5-cp38-abi3-win_amd64.whl", hash = "sha256:556e106ee01aa13484ce9b0239bca667be5004efb0aabbed28d353df86445595" },
-]
-
-[[package]]
-name = "fastapi"
-version = "0.135.1"
-source = { registry = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple" }
-dependencies = [
-    { name = "annotated-doc" },
-    { name = "pydantic" },
-    { name = "starlette" },
-    { name = "typing-extensions" },
-    { name = "typing-inspection" },
-]
-sdist = { url = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple/fastapi/0.135.1/fastapi-0.135.1.tar.gz", hash = "sha256:d04115b508d936d254cea545b7312ecaa58a7b3a0f84952535b4c9afae7668cd" }
-wheels = [
-    { url = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple/fastapi/0.135.1/fastapi-0.135.1-py3-none-any.whl", hash = "sha256:46e2fc5745924b7c840f71ddd277382af29ce1cdb7d5eab5bf697e3fb9999c9e" },
 ]
 
 [[package]]
@@ -575,15 +509,6 @@ wheels = [
     { url = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple/mypy/1.19.1/mypy-1.19.1-cp314-cp314-musllinux_1_2_x86_64.whl", hash = "sha256:481daf36a4c443332e2ae9c137dfee878fcea781a2e3f895d54bd3002a900957" },
     { url = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple/mypy/1.19.1/mypy-1.19.1-cp314-cp314-win_amd64.whl", hash = "sha256:8bb5c6f6d043655e055be9b542aa5f3bdd30e4f3589163e85f93f3640060509f" },
     { url = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple/mypy/1.19.1/mypy-1.19.1-py3-none-any.whl", hash = "sha256:f1235f5ea01b7db5468d53ece6aaddf1ad0b88d9e7462b86ef96fe04995d7247" },
-]
-
-[[package]]
-name = "mypy-boto3-s3"
-version = "1.42.67"
-source = { registry = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple" }
-sdist = { url = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple/mypy-boto3-s3/1.42.67/mypy_boto3_s3-1.42.67.tar.gz", hash = "sha256:3a3a918a9949f2d6f8071d490b8968ddce634aa19590697537e5189cbdca403e" }
-wheels = [
-    { url = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple/mypy-boto3-s3/1.42.67/mypy_boto3_s3-1.42.67-py3-none-any.whl", hash = "sha256:93208799734611da4caa5fa8f5ce677b62758ddcd34b737b9f7ae471d179b95e" },
 ]
 
 [[package]]
@@ -1039,24 +964,6 @@ dependencies = [
 sdist = { url = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple/typer/0.24.1/typer-0.24.1.tar.gz", hash = "sha256:e39b4732d65fbdcde189ae76cf7cd48aeae72919dea1fdfc16593be016256b45" }
 wheels = [
     { url = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple/typer/0.24.1/typer-0.24.1-py3-none-any.whl", hash = "sha256:112c1f0ce578bfb4cab9ffdabc68f031416ebcc216536611ba21f04e9aa84c9e" },
-]
-
-[[package]]
-name = "types-awscrt"
-version = "0.31.3"
-source = { registry = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple" }
-sdist = { url = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple/types-awscrt/0.31.3/types_awscrt-0.31.3.tar.gz", hash = "sha256:09d3eaf00231e0f47e101bd9867e430873bc57040050e2a3bd8305cb4fc30865" }
-wheels = [
-    { url = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple/types-awscrt/0.31.3/types_awscrt-0.31.3-py3-none-any.whl", hash = "sha256:e5ce65a00a2ab4f35eacc1e3d700d792338d56e4823ee7b4dbe017f94cfc4458" },
-]
-
-[[package]]
-name = "types-s3transfer"
-version = "0.16.0"
-source = { registry = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple" }
-sdist = { url = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple/types-s3transfer/0.16.0/types_s3transfer-0.16.0.tar.gz", hash = "sha256:b4636472024c5e2b62278c5b759661efeb52a81851cde5f092f24100b1ecb443" }
-wheels = [
-    { url = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple/types-s3transfer/0.16.0/types_s3transfer-0.16.0-py3-none-any.whl", hash = "sha256:1c0cd111ecf6e21437cb410f5cddb631bfb2263b77ad973e79b9c6d0cb24e0ef" },
 ]
 
 [[package]]

@@ -2,4 +2,4 @@
 
 import os
 
-os.environ.setdefault("ROOT_PATH", "/ailtir-mcp")
+os.environ.setdefault("AILTIR_MCP_SECRET", "test-token-abc123")

@@ -24,9 +24,4 @@ async def _lifespan(server: FastMCP) -> typing.AsyncIterator[AppContext]:
     _log.info("ailtir_mcp.stopped")
 
 
-mcp: FastMCP = FastMCP(
-    "ailtir-mcp",
-    stateless_http=True,
-    json_response=True,
-    lifespan=_lifespan,
-)
+mcp: FastMCP = FastMCP("ailtir-mcp", lifespan=_lifespan)

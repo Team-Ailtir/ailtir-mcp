@@ -2,7 +2,7 @@ import structlog
 from mcp.server.fastmcp import Context
 from mcp.server.session import ServerSession
 
-from ailtir_mcp.auth import current_token
+from ailtir_mcp.config import settings
 from ailtir_mcp.mcp import AppContext, mcp
 
 _log = structlog.get_logger(__name__)
@@ -13,7 +13,7 @@ async def list_knowledge_bases(
     ctx: Context[ServerSession, AppContext],
 ) -> str:
     """List all knowledge bases in your Ailtir account."""
-    token = current_token.get()
+    token = settings.ailtir_mcp_secret
     http = ctx.request_context.lifespan_context.http
     resp = await http.get(
         "/kb",
