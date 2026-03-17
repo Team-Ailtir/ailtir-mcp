@@ -28,5 +28,5 @@ jobs:
 
       - name: unit tests
         env:
-          AILTIR_MCP_SECRET: test-token-for-ci
+          AILTIR_MCP_SECRET: test-token-abc123
         run: make tests-unit
