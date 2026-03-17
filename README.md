@@ -24,8 +24,8 @@ Add the following to your `claude_desktop_config.json`
 {
   "mcpServers": {
     "ailtir": {
-      "type": "sse",
-      "url": "https://mcp.ailtir.ai/sse",
+      "type": "streamable-http",
+      "url": "https://mcp.ailtir.ai/mcp",
       "headers": {
         "Authorization": "Bearer YOUR_AILTIR_MCP_SECRET"
       }
@@ -52,14 +52,18 @@ Once connected, your AI assistant has access to the following four tools.
 Uploads a ZIP archive of documents to your Ailtir S3 storage.
 
 ```
-upload(file_path: string) → kb_id: string
+upload(file_name: string, file_content_base64: string) → kb_id: string
 ```
 
 | Parameter | Description |
 |-----------|-------------|
-| `file_path` | Absolute path to the local ZIP file to upload |
+| `file_name` | Name of the ZIP file, e.g. `tender_docs.zip` |
+| `file_content_base64` | Base64-encoded content of the ZIP file |
 
 Returns a `kb_id` that you pass to `analyse`, `list`, and `chat`.
+
+> **Tip:** In Claude, share the file in the conversation and ask Claude to upload
+> it — Claude will base64-encode the content and call this tool automatically.
 
 ---
 
@@ -84,11 +88,11 @@ analyse(kb_id: string) → status: string
 Lists all knowledge bases associated with your Ailtir account.
 
 ```
-list() → knowledge_bases: KnowledgeBase[]
+list() → string
 ```
 
-Each `KnowledgeBase` item contains `kb_id`, `name`, `status`, and
-`created_at`.
+Returns a formatted list of knowledge bases, each showing name, `kb_id`, and
+status (e.g. `ready`, `analysing`, `failed`).
 
 ---
 
@@ -98,7 +102,7 @@ Asks a question answered using the documents in a given knowledge base
 (retrieval-augmented generation via AWS Bedrock).
 
 ```
-chat(kb_id: string, question: string) → answer: string, sources: Source[]
+chat(kb_id: string, question: string) → answer: string
 ```
 
 | Parameter | Description |
