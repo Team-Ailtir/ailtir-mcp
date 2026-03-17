@@ -13,9 +13,11 @@ base, and run RAG chat — all from within your AI assistant.
 
 ## Installation
 
-### Claude Code
+`uvx` runs the server in an isolated environment with no install step —
+it is the recommended approach. You need [uv][] installed (`curl -LsSf
+https://astral.sh/uv/install.sh | sh`).
 
-The recommended way — no install step, always runs the latest version:
+### Claude Code
 
 ```bash
 claude mcp add ailtir \
@@ -60,20 +62,20 @@ Add the following to your `claude_desktop_config.json`
 }
 ```
 
-Replace `your-secret-here` with the secret you generated in the Ailtir app,
-then restart Claude Desktop.
+Replace `your-secret-here` with the secret you copied in Step 1, then
+restart Claude Desktop.
 
-### pip / uv add
+### Persistent install (optional)
 
-If you prefer an explicit install:
+If you prefer `ailtir-mcp` installed as a persistent global tool:
 
 ```bash
-pip install ailtir-mcp
-# or
-uv add ailtir-mcp
+uv tool install ailtir-mcp
 ```
 
 Then use `ailtir-mcp` as the command instead of `uvx ailtir-mcp`.
+`pip install` is not recommended — it installs into the active Python
+environment and can cause dependency conflicts.
 
 ## Tools
 

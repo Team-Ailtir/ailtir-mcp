@@ -274,22 +274,27 @@
 
   <!-- ── Step 2: Install ────────────────────────────────────────────────── -->
 
-  <h2><span class="step-num">2</span> Install the plugin</h2>
+  <h2><span class="step-num">2</span> Install uv</h2>
 
   <p>
-    The plugin runs as a local process on your machine.
-    <a href="https://docs.astral.sh/uv/">uv</a> is the recommended way to run it —
-    no separate install step, always the latest version:
+    The plugin runs via <a href="https://docs.astral.sh/uv/">uvx</a> — no separate install
+    step, always the latest version, fully isolated. First, make sure uv is available:
   </p>
 
-  <pre><code><span class="comment"># Check uv is available (install from https://docs.astral.sh/uv/ if not)</span>
+  <pre><code><span class="comment"># macOS / Linux</span>
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+<span class="comment"># Windows</span>
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+<span class="comment"># Verify</span>
 uv --version</code></pre>
 
-  <p>Or install the package explicitly:</p>
-
-  <pre><code>pip install ailtir-mcp
-<span class="comment"># or</span>
-uv add ailtir-mcp</code></pre>
+  <div class="callout">
+    <strong>Why uvx and not pip install?</strong>
+    <code>uvx</code> runs ailtir-mcp in its own isolated environment — no virtual environment
+    setup, no dependency conflicts, and it always fetches the latest version automatically.
+  </div>
 
   <!-- ── Step 3: Configure ───────────────────────────────────────────────── -->
 
@@ -347,6 +352,13 @@ claude mcp add ailtir \
 
     <p>Restart Claude Desktop after saving.</p>
   </div>
+
+  <p style="margin-top:1.25rem; font-size:0.9rem; color:#6b7280;">
+    Prefer a persistent install? Use <code>uv tool install ailtir-mcp</code> and
+    replace <code>uvx</code> with <code>ailtir-mcp</code> in the config above.
+    Avoid <code>pip install</code> — it installs into the active Python environment
+    and can cause dependency conflicts.
+  </p>
 
   <!-- ── Step 4: Use the tools ──────────────────────────────────────────── -->
 
