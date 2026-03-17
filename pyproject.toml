@@ -50,6 +50,10 @@ omit = [
 [tool.coverage.run]
 source = ["src"]
 
+[[tool.uv.index]]
+url = "https://pypi.org/simple"
+default = true
+
 [tool.hatch.build]
 packages = ["src/ailtir_mcp"]
 
