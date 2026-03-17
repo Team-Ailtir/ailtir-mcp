@@ -27,12 +27,16 @@ All checks and tests must pass before opening a PR.
 
 ### Prerequisites
 
-- `UV_PUBLISH_TOKEN` — a PyPI API token stored in **1Password** under
-  `PyPI / ailtir-mcp publish token`. Export it before running `make publish`:
+A PyPI API token is required. It is stored in **1Password** under
+`PyPI / ailtir-mcp publish token` and also saved locally in `.pypi.token`
+(gitignored). `make publish` reads it automatically — no export needed.
 
-  ```bash
-  export UV_PUBLISH_TOKEN=pypi-...
-  ```
+If the file is missing, restore it from 1Password:
+
+```bash
+echo "pypi-..." > .pypi.token
+chmod 600 .pypi.token
+```
 
 ### Steps
 

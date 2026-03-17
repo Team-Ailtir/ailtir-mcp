@@ -59,8 +59,12 @@ build: ## Build distribution packages (sdist + wheel)
 	uv build
 
 .PHONY: publish
-publish: build ## Build and publish to PyPI (requires UV_PUBLISH_TOKEN)
-	uv publish
+publish: build ## Build and publish to PyPI (reads UV_PUBLISH_TOKEN or .pypi.token)
+	@if [ -f .pypi.token ]; then \
+		UV_PUBLISH_TOKEN=$$(cat .pypi.token) uv publish; \
+	else \
+		uv publish; \
+	fi
 
 .PHONY: tests
 tests: tests-unit ## Run all tests
