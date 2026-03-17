@@ -311,10 +311,8 @@ uv --version</code></pre>
 
   <div id="tab-cc" class="tab-panel active">
     <pre><code><span class="comment"># Add via the CLI (recommended)</span>
-claude mcp add ailtir \
-  --command uvx \
-  --args ailtir-mcp \
-  --env AILTIR_MCP_SECRET=amcp_your-secret-here</code></pre>
+claude mcp add ailtir uvx ailtir-mcp \
+  -e AILTIR_MCP_SECRET=amcp_your-secret-here</code></pre>
 
     <p>Or add manually to <code>.claude/settings.json</code>:</p>
 

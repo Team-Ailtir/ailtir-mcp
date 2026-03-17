@@ -20,10 +20,8 @@ https://astral.sh/uv/install.sh | sh`).
 ### Claude Code
 
 ```bash
-claude mcp add ailtir \
-  --command uvx \
-  --args ailtir-mcp \
-  --env AILTIR_MCP_SECRET=your-secret-here
+claude mcp add ailtir uvx ailtir-mcp \
+  -e AILTIR_MCP_SECRET=your-secret-here
 ```
 
 Or add manually to `.claude/settings.json`:
