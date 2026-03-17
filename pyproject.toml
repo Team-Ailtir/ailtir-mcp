@@ -1,6 +1,6 @@
 [project]
 name = "ailtir-mcp"
-version = "1.1.0-76b9cca"
+version = "1.1.0+76b9cca"
 description = "Ailtir MCP server — upload, analyse, list, and chat with knowledge bases"
 readme = "README.md"
 requires-python = ">=3.13"
