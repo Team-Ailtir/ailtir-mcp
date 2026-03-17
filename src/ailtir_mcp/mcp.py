@@ -1,7 +1,6 @@
 import contextlib
 import typing
 from dataclasses import dataclass
-from importlib.metadata import version
 
 import httpx
 import structlog
@@ -25,4 +24,4 @@ async def _lifespan(server: FastMCP) -> typing.AsyncIterator[AppContext]:
     _log.info("ailtir_mcp.stopped")
 
 
-mcp: FastMCP = FastMCP("ailtir-mcp", version=version("ailtir-mcp"), lifespan=_lifespan)
+mcp: FastMCP = FastMCP("ailtir-mcp", lifespan=_lifespan)
