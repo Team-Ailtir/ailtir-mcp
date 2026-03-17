@@ -53,9 +53,13 @@ security-check: ## Security scan with bandit
 serve: ## Run the MCP server
 	uv run --frozen --no-dev python -m ailtir_mcp.server
 
-.PHONY: publish
-publish: ## Build and publish to PyPI
+.PHONY: build
+build: ## Build distribution packages (sdist + wheel)
+	rm -rf dist/
 	uv build
+
+.PHONY: publish
+publish: build ## Build and publish to PyPI (requires UV_PUBLISH_TOKEN)
 	uv publish
 
 .PHONY: tests
