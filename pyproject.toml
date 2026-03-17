@@ -4,11 +4,10 @@ version = "0.1.0"
 description = "Ailtir MCP server — upload, analyse, list, and chat with knowledge bases"
 readme = "README.md"
 requires-python = ">=3.13"
-license = { text = "MIT" }
+license = "MIT"
 keywords = ["mcp", "ailtir", "knowledge-base", "rag"]
 classifiers = [
     "Programming Language :: Python :: 3.13",
-    "License :: OSI Approved :: MIT License",
 ]
 dependencies = [
     "httpx>=0.28.1",
