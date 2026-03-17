@@ -8,19 +8,14 @@ from ailtir_mcp.mcp import AppContext
 
 
 @pytest.fixture
-def mock_s3() -> MagicMock:
-    return MagicMock()
-
-
-@pytest.fixture
 def mock_http() -> httpx.AsyncClient:
     # respx intercepts calls on this client inside individual tests.
     return httpx.AsyncClient(base_url="http://test-mcp-api")
 
 
 @pytest.fixture
-def app_context(mock_http: httpx.AsyncClient, mock_s3: MagicMock) -> AppContext:
-    return AppContext(http=mock_http, s3=mock_s3)
+def app_context(mock_http: httpx.AsyncClient) -> AppContext:
+    return AppContext(http=mock_http)
 
 
 @pytest.fixture
