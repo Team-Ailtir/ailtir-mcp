@@ -24,7 +24,9 @@ class BearerAuthMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self._verify_url = verify_url
 
-    async def dispatch(self, request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
+    async def dispatch(
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
         if request.url.path in _EXEMPT_PATHS:
             return await call_next(request)
 

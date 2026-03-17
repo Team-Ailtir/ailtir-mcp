@@ -1,6 +1,5 @@
 import base64
 import functools
-import uuid
 
 import anyio
 import structlog
@@ -33,8 +32,18 @@ async def upload(
     except Exception:
         return "Error: file_content_base64 is not valid base64."
 
-    kb_id = str(uuid.uuid4())
-    s3_key = f"kbs/{kb_id}/{file_name}"
+    # Register with mcp-api first to get a server-assigned kb_id and S3 key.
+    token = current_token.get()
+    http = ctx.request_context.lifespan_context.http
+    reg_resp = await http.post(
+        "/kb",
+        json={"file_name": file_name},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    reg_resp.raise_for_status()
+    reg = reg_resp.json()
+    kb_id: str = reg["kb_id"]
+    s3_key: str = reg["s3_key"] + file_name
 
     s3 = ctx.request_context.lifespan_context.s3
     await anyio.to_thread.run_sync(
@@ -46,16 +55,6 @@ async def upload(
             ContentType="application/zip",
         )
     )
-    _log.info("upload.s3_done", kb_id=kb_id, s3_key=s3_key)
-
-    token = current_token.get()
-    http = ctx.request_context.lifespan_context.http
-    resp = await http.post(
-        "/kb",
-        json={"kb_id": kb_id, "s3_key": s3_key, "file_name": file_name},
-        headers={"Authorization": f"Bearer {token}"},
-    )
-    resp.raise_for_status()
-
+    _log.info("upload.done", kb_id=kb_id, s3_key=s3_key)
     await ctx.info(f"Upload complete. kb_id: {kb_id}")
     return kb_id
