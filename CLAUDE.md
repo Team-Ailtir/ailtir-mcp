@@ -10,24 +10,26 @@ The Ailtir MCP server. For user-facing installation and tool docs, see the
 bearer token, then delegates all business logic to [mcp-api][] over REST.
 
 ```
-MCP client  →  ailtir-mcp (this repo, Starlette + FastMCP)  →  mcp-api  →  pgqueue
+MCP client  →  ailtir-mcp (Starlette + FastMCP)  →  mcp-api  →  pgqueue
 ```
 
-The server runs as a stateless, containerized process on ECS behind a load
-balancer. No sticky sessions are required.
+The server is stateless (`stateless_http=True`) and runs on ECS behind a load
+balancer — any node can handle any request.
 
 ## Tech Stack
 
 | Dependency | Purpose |
 |------------|---------|
-| `mcp[cli]` >= 1.26.0 | MCP SDK — `FastMCP`, Streamable HTTP transport |
-| `starlette` | ASGI host; mounts MCP app + health route + auth middleware |
+| `mcp[cli]` >= 1.9.0 | `FastMCP`, Streamable HTTP transport |
+| `starlette` | ASGI host; mounts MCP app + `/health` + auth middleware |
 | `uvicorn` | ASGI server |
-| `httpx` | HTTP client for mcp-api calls |
-| `pydantic` | Tool input/output schemas |
+| `httpx` | HTTP client for mcp-api calls (shared via `AppContext`) |
+| `boto3` | Direct S3 upload in the `upload` tool |
+| `anyio` | `to_thread.run_sync` wrapper for boto3 (sync → async) |
+| `pydantic-settings` | `Settings` from env / `.env` file |
 | `alogging` | Structured logging (consistent with Ailtir services) |
 
-Python 3.12+.
+Python 3.13+.
 
 ## Project Structure
 
@@ -40,233 +42,148 @@ ailtir-mcp/
 ├── src/
 │   └── ailtir_mcp/
 │       ├── __init__.py
-│       ├── server.py        # FastMCP instance, Starlette app, entrypoint
-│       ├── auth.py          # BearerAuthMiddleware — validates AILTIR_MCP_SECRET
-│       ├── client.py        # httpx client for mcp-api calls
+│       ├── config.py        # pydantic-settings Settings
+│       ├── auth.py          # BearerAuthMiddleware + current_token ContextVar
+│       ├── mcp.py           # FastMCP instance + AppContext dataclass + lifespan
+│       ├── server.py        # Starlette app + uvicorn entrypoint
 │       └── tools/
-│           ├── __init__.py
+│           ├── __init__.py  # imports all tools to register them with mcp
 │           ├── upload.py    # upload tool
 │           ├── analyse.py   # analyse tool
-│           ├── list_kbs.py  # list tool
+│           ├── list_kbs.py  # list tool (tool name: "list")
 │           └── chat.py      # chat tool
 └── tests/
-    ├── test_tools.py
-    └── test_auth.py
+    └── unit/
+        ├── conftest.py      # mock_ctx, app_context, set_current_token fixtures
+        ├── test_auth.py
+        ├── test_upload.py
+        ├── test_analyse.py
+        ├── test_list_kbs.py
+        └── test_chat.py
 ```
 
 Keep files under 400 lines; test files under 800 lines.
 
-## Server Setup
+## Key Files
 
-Use `FastMCP` in **stateless HTTP mode** — required for multi-node ECS
-deployment:
+**`src/ailtir_mcp/mcp.py`** — the FastMCP instance and `AppContext`:
 
 ```python
-from mcp.server.fastmcp import FastMCP
+@dataclass
+class AppContext:
+    http: httpx.AsyncClient  # shared client for mcp-api calls
+    s3: Any                  # boto3 S3 client
 
-mcp = FastMCP(
-    "ailtir-mcp",
-    stateless_http=True,   # no per-session state; any node handles any request
-    json_response=True,    # return plain JSON; no SSE streams needed for our tools
-)
+mcp = FastMCP("ailtir-mcp", stateless_http=True, json_response=True, lifespan=_lifespan)
 ```
 
-Mount into a **Starlette app** to add the `/health` route, CORS headers, and
-the auth middleware alongside the MCP endpoint:
+**`src/ailtir_mcp/server.py`** — Starlette app wiring:
 
 ```python
-import contextlib
-from starlette.applications import Starlette
-from starlette.middleware import Middleware
-from starlette.routing import Mount, Route
-from starlette.responses import JSONResponse
-
-@contextlib.asynccontextmanager
-async def lifespan(app):
-    async with mcp.session_manager.run():
-        yield
-
-async def health(request):
-    return JSONResponse({"status": "ok"})
-
 app = Starlette(
-    routes=[
-        Route("/health", health),
-        Mount("/", app=mcp.streamable_http_app()),
-    ],
-    middleware=[Middleware(BearerAuthMiddleware)],
-    lifespan=lifespan,
+    routes=[Route("/health", _health), Mount("/", app=mcp.streamable_http_app())],
+    middleware=[Middleware(BearerAuthMiddleware, verify_url=f"{settings.mcp_api_url}/auth/verify")],
+    lifespan=_lifespan,  # runs mcp.session_manager.run()
 )
 ```
 
-The MCP endpoint is served at `/mcp` by default (i.e. `https://mcp.ailtir.ai/mcp`).
+The MCP endpoint is at `/mcp` (FastMCP default).
 
 ## Authentication
 
-`AILTIR_MCP_SECRET` is a per-user bearer token issued by mcp-api. It is
-**not** OAuth 2.1 — use a custom Starlette middleware, not `TokenVerifier`:
+`AILTIR_MCP_SECRET` is a per-user bearer token validated by calling
+`GET /auth/verify` on mcp-api. The middleware stores the validated token in a
+`ContextVar` so tools can include it in their mcp-api calls:
 
 ```python
-from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.responses import Response
-
-EXEMPT_PATHS = {"/health"}
+# auth.py
+current_token: ContextVar[str] = ContextVar("current_token", default="")
 
 class BearerAuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
-        if request.url.path in EXEMPT_PATHS:
-            return await call_next(request)
-        auth = request.headers.get("Authorization", "")
-        if not auth.startswith("Bearer "):
-            return Response("Unauthorized", status_code=401)
-        token = auth.removeprefix("Bearer ")
-        if not await verify_secret(token):   # call mcp-api /auth/verify
-            return Response("Unauthorized", status_code=401)
-        return await call_next(request)
+        # 1. Check Authorization header
+        # 2. Call mcp-api GET /auth/verify
+        # 3. On success: current_token.set(token) and call_next(request)
 ```
 
-Validate the token by calling `mcp-api`'s `/auth/verify` endpoint — the MCP
-server holds no secret store of its own.
+Tools read the token with `token = current_token.get()`.
 
-## Tool Definition Pattern
+## Upload Flow
 
-Use the `@mcp.tool()` decorator. Type hints drive the input schema
-automatically; the docstring (including `Args:`) becomes the description shown
-to the LLM.
+The `upload` tool uses a **register-first** pattern to get a server-assigned
+`kb_id` whose path matches the AiltirDB record:
 
-```python
-from mcp.server.fastmcp import FastMCP, Context
-from mcp.server.session import ServerSession
+1. `POST /kb` on mcp-api with `{file_name}` → get `{kb_id, s3_key}`
+2. Upload ZIP bytes to S3 at `s3_key + file_name` using boto3 in a thread
+3. Return `kb_id`
 
-@mcp.tool()
-async def upload(file_path: str, ctx: Context[ServerSession, None]) -> str:
-    """Upload a ZIP archive of documents to Ailtir.
+Do **not** pre-generate `kb_id` locally — the S3 path format
+`kbs/{tenant_id}/{kb_id}/` is owned by mcp-api/knowledge-base service.
 
-    Args:
-        file_path: Absolute path to the local ZIP file.
-    """
-    await ctx.info(f"Uploading {file_path}")
-    # ... call mcp-api ...
-    return kb_id
-```
+## Adding a New Tool
 
-Rules:
-- Prefer `async` tools; they compose better with `httpx` I/O.
-- Always inject `ctx` for logging and progress; use `await ctx.info/debug/error()`.
-- Use `await ctx.report_progress(progress, total)` for long-running operations
-  like `analyse` (which waits for Bedrock ingestion).
-- Return a `pydantic.BaseModel` subclass for structured output; return `str` for
-  simple text.
-- Do **not** leak internal error details to the LLM — catch exceptions and return
-  a clean error string, or let the SDK wrap them with `isError: true`.
+1. Create `src/ailtir_mcp/tools/<name>.py`
+2. Import `mcp` from `ailtir_mcp.mcp` and decorate with `@mcp.tool()`
+3. Add the import to `src/ailtir_mcp/tools/__init__.py`
+4. Add unit tests in `tests/unit/test_<name>.py`
 
-## Shared Resources (Lifespan)
-
-Use the lifespan pattern to manage the shared `httpx.AsyncClient` for mcp-api
-calls. Do not create a new client per tool call.
-
-```python
-from contextlib import asynccontextmanager
-from dataclasses import dataclass
-import httpx
-from mcp.server.fastmcp import FastMCP, Context
-from mcp.server.session import ServerSession
-
-@dataclass
-class AppContext:
-    http: httpx.AsyncClient
-
-@asynccontextmanager
-async def app_lifespan(server: FastMCP):
-    async with httpx.AsyncClient(base_url=MCP_API_URL) as client:
-        yield AppContext(http=client)
-
-mcp = FastMCP("ailtir-mcp", lifespan=app_lifespan, ...)
-
-@mcp.tool()
-async def list_kbs(ctx: Context[ServerSession, AppContext]) -> list[dict]:
-    """List all knowledge bases for this account."""
-    client = ctx.request_context.lifespan_context.http
-    resp = await client.get("/kb")
-    resp.raise_for_status()
-    return resp.json()
-```
-
-## Security Requirements
-
-Per the MCP specification, HTTP transport servers **must**:
-
-1. Validate the `Origin` header on all incoming requests (DNS rebinding
-   protection). In production behind a load balancer / API Gateway this is
-   typically handled at the edge; verify the setup.
-2. Bind to `127.0.0.1` only when running locally.
-3. Use HTTPS in production (enforced by the ECS / ALB setup).
-
-## Logging
-
-Use `alogging` (consistent with all other Ailtir services). Do **not** use
-`print()`.
-
-```python
-import structlog
-log = structlog.get_logger()
-
-log.info("tool.called", tool="upload", file_path=file_path)
-```
-
-Additionally, use `await ctx.info/debug/warning/error()` inside tools to send
-structured log messages to the MCP client over the protocol.
+Tool conventions:
+- Use `async def`; inject `ctx: Context[ServerSession, AppContext]` as the last parameter.
+- Use `await ctx.info/debug/error()` for logging inside tools (sent to MCP client).
+- Get the token: `token = current_token.get()`
+- Get the http client: `ctx.request_context.lifespan_context.http`
+- Get the S3 client: `ctx.request_context.lifespan_context.s3`
+- Return `str` for simple results. Use a `pydantic.BaseModel` subclass for structured output.
+- Call `resp.raise_for_status()` on mcp-api responses; the SDK catches the exception
+  and returns it to the client as `isError: true`.
 
 ## Local Development
 
 ```bash
-cp .env.example .env     # fill AILTIR_MCP_SECRET, MCP_API_URL, etc.
-make serve               # uvicorn with hot-reload
-make inspect             # launches MCP Inspector at http://localhost:6274
-make test                # pytest unit + integration tests
+cp .env.example .env
+make install-dev       # uv sync --group dev
+make serve             # python -m ailtir_mcp.server (port 8000)
+make inspect           # MCP Inspector via mcp dev
+make tests-unit        # pytest with coverage
+make checks            # format + lint + type-check + security
 ```
-
-`make inspect` runs:
-```bash
-uv run mcp dev src/ailtir_mcp/server.py
-```
-
-The MCP Inspector connects to `http://localhost:8000/mcp` and lets you call
-tools interactively without a real MCP client.
 
 ## Testing
 
-Test tool functions directly (they are plain async Python functions) for unit
-tests. Use the in-process MCP client for integration tests:
+Tool functions are plain `async def` — call them directly with a mocked `ctx`:
 
 ```python
-import pytest
-from mcp import ClientSession
-from mcp.client.streamable_http import streamablehttp_client
+# conftest.py provides: mock_ctx, app_context, set_current_token (autouse)
 
-@pytest.mark.asyncio
-async def test_list_kbs():
-    async with streamablehttp_client("http://localhost:8000/mcp") as (r, w, _):
-        async with ClientSession(r, w) as session:
-            await session.initialize()
-            result = await session.call_tool("list_kbs", {})
-            assert not result.isError
+@respx.mock
+async def test_chat_success(mock_ctx):
+    respx.post("http://test-mcp-api/kb/kb-123/chat").mock(
+        return_value=Response(200, json={"answer": "The deadline is 31 March."})
+    )
+    result = await chat("kb-123", "When?", mock_ctx)
+    assert result == "The deadline is 31 March."
 ```
+
+Use `respx` to mock httpx calls. The `autouse` `set_current_token` fixture sets
+`current_token` to `"test-token-abc123"` for every test.
+
+## Config (`.env.example`)
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `MCP_API_URL` | `http://localhost:8001` | mcp-api base URL |
+| `AWS_REGION` | `eu-west-1` | AWS region |
+| `S3_BUCKET` | `kbs.ailtir.ai` | S3 bucket for ZIP uploads |
+| `LOG_LEVEL` | `INFO` | `DEBUG` / `INFO` |
+| `LOG_FORMAT` | `console` | `console` (dev) / `json` (prod) |
 
 ## Deployment
 
-- **Transport**: Streamable HTTP on port `8000`
-- **Run**: `uvicorn ailtir_mcp.server:app --host 0.0.0.0 --port 8000`
-- **Stateless**: any ECS task handles any request (no sticky sessions)
+- **Transport**: Streamable HTTP, port `8000`
+- **Entrypoint**: `python -m ailtir_mcp.server`
 - **Health check**: `GET /health` → `{"status": "ok"}`
-- **Auth**: `Authorization: Bearer <AILTIR_MCP_SECRET>` on all requests except
-  `/health`
-
-## Backwards Compatibility with Legacy SSE
-
-The deprecated HTTP+SSE transport (protocol version `2024-11-05`) is **not**
-supported. All clients must use Streamable HTTP (`2025-06-18`). Claude Desktop
->= 0.10 and Jentic support this.
+- **Auth**: `Authorization: Bearer <AILTIR_MCP_SECRET>` required on all routes except `/health`
+- **Stateless**: no sticky sessions needed
 
 [readme]: README.md
 [mcp-api]: ../mcp-api/README.md
