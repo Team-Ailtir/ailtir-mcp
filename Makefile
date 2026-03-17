@@ -67,23 +67,24 @@ publish: build ## Build and publish to PyPI (reads UV_PUBLISH_TOKEN or .pypi.tok
 	fi
 
 .PHONY: bump-version
-bump-version: ## Bump minor version and append current commit hash (e.g. 1.2.0+abc1234)
+bump-version: ## Bump minor version (e.g. 1.1.0 → 1.2.0)
 	@current=$$(grep '^version' pyproject.toml | sed 's/version = "\(.*\)"/\1/' | cut -d'+' -f1); \
 	major=$$(echo $$current | cut -d'.' -f1); \
 	minor=$$(echo $$current | cut -d'.' -f2); \
 	patch=$$(echo $$current | cut -d'.' -f3); \
 	new_minor=$$((minor + 1)); \
-	hash=$$(git rev-parse --short HEAD); \
-	new_version="$$major.$$new_minor.$$patch+$$hash"; \
+	new_version="$$major.$$new_minor.$$patch"; \
 	sed -i "s/^version = \".*\"/version = \"$$new_version\"/" pyproject.toml; \
 	echo "Version bumped to $$new_version"
 
 .PHONY: release
-release: bump-version ## Bump version, commit, push, then publish to PyPI
+release: bump-version ## Bump version, commit, tag, push, then publish to PyPI
 	@version=$$(grep '^version' pyproject.toml | sed 's/version = "\(.*\)"/\1/'); \
 	git add pyproject.toml && \
 	git commit -m "Bump version to $$version" && \
+	git tag "v$$version" && \
 	git push && \
+	git push --tags && \
 	$(MAKE) publish
 
 .PHONY: tests
