@@ -1,3 +1,6 @@
+import base64
+
+import httpx
 import structlog
 from mcp.server.fastmcp import Context
 from mcp.server.session import ServerSession
@@ -22,15 +25,32 @@ async def upload(
     """
     await ctx.info(f"Uploading {file_name}")
 
+    try:
+        content = base64.b64decode(file_content_base64, validate=True)
+    except Exception:
+        return "Error: file_content_base64 is not valid base64."
+
+    # Register with mcp-api to get a server-assigned kb_id and presigned upload URL.
     token = current_token.get()
     http = ctx.request_context.lifespan_context.http
-    resp = await http.post(
+    reg_resp = await http.post(
         "/kb",
-        json={"file_name": file_name, "file_content_base64": file_content_base64},
+        json={"file_name": file_name},
         headers={"Authorization": f"Bearer {token}"},
     )
-    resp.raise_for_status()
-    kb_id: str = resp.json()["kb_id"]
+    reg_resp.raise_for_status()
+    reg = reg_resp.json()
+    kb_id: str = reg["kb_id"]
+    upload_url: str = reg["upload_url"]
+
+    # PUT directly to S3 via the presigned URL — no auth header, S3 auth is in the URL.
+    async with httpx.AsyncClient(timeout=None) as s3_client:  # noqa: S113
+        s3_resp = await s3_client.put(
+            upload_url,
+            content=content,
+            headers={"Content-Type": "application/zip"},
+        )
+        s3_resp.raise_for_status()
 
     _log.info("upload.done", kb_id=kb_id)
     await ctx.info(f"Upload complete. kb_id: {kb_id}")
