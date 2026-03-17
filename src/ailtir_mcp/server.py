@@ -1,16 +1,12 @@
-"""Starlette application and process entrypoint."""
+"""FastAPI application and process entrypoint."""
 
 import contextlib
 import typing
 
 import alogging
+import fastapi
 import structlog
 import uvicorn
-from starlette.applications import Starlette
-from starlette.middleware import Middleware
-from starlette.requests import Request
-from starlette.responses import JSONResponse
-from starlette.routing import Mount, Route
 
 import ailtir_mcp.tools  # noqa: F401 — registers all tools with mcp instance
 from ailtir_mcp.auth import BearerAuthMiddleware
@@ -21,28 +17,21 @@ _log = structlog.get_logger(__name__)
 
 
 @contextlib.asynccontextmanager
-async def _lifespan(app: Starlette) -> typing.AsyncIterator[None]:
+async def _lifespan(app: fastapi.FastAPI) -> typing.AsyncIterator[None]:
     async with mcp.session_manager.run():
         yield
 
 
-async def _health(request: Request) -> JSONResponse:
-    return JSONResponse({"status": "ok"})
+app = fastapi.FastAPI(lifespan=_lifespan, root_path=settings.root_path)
+app.add_middleware(BearerAuthMiddleware, verify_url=f"{settings.mcp_api_url}/auth/verify")
 
 
-app = Starlette(
-    routes=[
-        Route("/health", _health),
-        Mount("/", app=mcp.streamable_http_app()),
-    ],
-    middleware=[
-        Middleware(
-            BearerAuthMiddleware,
-            verify_url=f"{settings.mcp_api_url}/auth/verify",
-        )
-    ],
-    lifespan=_lifespan,
-)
+@app.get("/health")
+async def health() -> dict[str, str]:
+    return {"status": "ok"}
+
+
+app.mount("/", app=mcp.streamable_http_app())
 
 
 def main() -> None:

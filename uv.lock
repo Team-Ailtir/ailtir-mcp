@@ -10,10 +10,10 @@ dependencies = [
     { name = "alogging" },
     { name = "anyio" },
     { name = "boto3" },
+    { name = "fastapi" },
     { name = "httpx" },
     { name = "mcp", extra = ["cli"] },
     { name = "pydantic-settings" },
-    { name = "starlette" },
     { name = "structlog" },
     { name = "uvicorn" },
 ]
@@ -35,10 +35,10 @@ requires-dist = [
     { name = "alogging", specifier = ">=2.2.0" },
     { name = "anyio", specifier = ">=4.9.0" },
     { name = "boto3", specifier = ">=1.39.8" },
+    { name = "fastapi", specifier = ">=0.135.1" },
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "mcp", extras = ["cli"], specifier = ">=1.9.0" },
     { name = "pydantic-settings", specifier = ">=2.10.1" },
-    { name = "starlette", specifier = ">=0.46.0" },
     { name = "structlog", specifier = ">=25.4.0" },
     { name = "uvicorn", specifier = ">=0.35.0" },
 ]
@@ -374,6 +374,22 @@ wheels = [
     { url = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple/cryptography/46.0.5/cryptography-46.0.5-cp38-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:ced80795227d70549a411a4ab66e8ce307899fad2220ce5ab2f296e687eacde9" },
     { url = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple/cryptography/46.0.5/cryptography-46.0.5-cp38-abi3-win32.whl", hash = "sha256:02f547fce831f5096c9a567fd41bc12ca8f11df260959ecc7c3202555cc47a72" },
     { url = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple/cryptography/46.0.5/cryptography-46.0.5-cp38-abi3-win_amd64.whl", hash = "sha256:556e106ee01aa13484ce9b0239bca667be5004efb0aabbed28d353df86445595" },
+]
+
+[[package]]
+name = "fastapi"
+version = "0.135.1"
+source = { registry = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple" }
+dependencies = [
+    { name = "annotated-doc" },
+    { name = "pydantic" },
+    { name = "starlette" },
+    { name = "typing-extensions" },
+    { name = "typing-inspection" },
+]
+sdist = { url = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple/fastapi/0.135.1/fastapi-0.135.1.tar.gz", hash = "sha256:d04115b508d936d254cea545b7312ecaa58a7b3a0f84952535b4c9afae7668cd" }
+wheels = [
+    { url = "https://pypi-ailtir-890742582948.d.codeartifact.eu-west-1.amazonaws.com/pypi/pypi-ailtir/simple/fastapi/0.135.1/fastapi-0.135.1-py3-none-any.whl", hash = "sha256:46e2fc5745924b7c840f71ddd277382af29ce1cdb7d5eab5bf697e3fb9999c9e" },
 ]
 
 [[package]]
