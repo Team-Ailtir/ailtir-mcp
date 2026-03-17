@@ -58,6 +58,14 @@ build: ## Build distribution packages (sdist + wheel)
 	rm -rf dist/
 	uv build
 
+.PHONY: publish
+publish: build ## Build and publish to PyPI (reads UV_PUBLISH_TOKEN or .pypi.token)
+	@if [ -f .pypi.token ]; then \
+		UV_PUBLISH_TOKEN=$$(cat .pypi.token) uv publish; \
+	else \
+		uv publish; \
+	fi
+
 .PHONY: bump-version
 bump-version: ## Bump minor version and append current commit hash (e.g. 1.2.0+abc1234)
 	@current=$$(grep '^version' pyproject.toml | sed 's/version = "\(.*\)"/\1/' | cut -d'+' -f1); \
