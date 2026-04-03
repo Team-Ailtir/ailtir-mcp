@@ -8,8 +8,8 @@ base, and run RAG chat — all from within your AI assistant.
 
 - Python 3.13+ (or [uv][uv] — no separate Python install needed with `uvx`)
 - An [Ailtir account][ailtir]
-- An `AILTIR_MCP_SECRET` — generate one from **Settings → Developer** in the
-  Ailtir app (see [Getting your secret](#getting-your-secret))
+- An `AILTIR_MCP_SECRET` — copy your MCP Key from the Ailtir app
+  (see [Getting your secret](#getting-your-secret))
 
 ## Installation
 
@@ -141,15 +141,10 @@ chat(kb_id: string, question: string) → answer: string
 ## Getting your secret
 
 1. Sign in to the [Ailtir app][ailtir]
-2. Go to **Settings → Developer**
-3. Click **Generate new secret**
-4. Copy the secret immediately — it is shown only once
+2. Click your avatar or name to open the **Account** page
+3. Find the **Secrets** cell and click **Reveal**
+4. Copy the **MCP Key** — it starts with `amcp_`
 5. Paste it as `AILTIR_MCP_SECRET` in your client config (see [Installation](#installation))
-
-To revoke a secret, return to **Settings → Developer** and click **Revoke**.
-
-> **Note:** The Developer Settings UI is currently in development.
-> Track progress at [app#130][secret-issue].
 
 ## Links
 
@@ -165,4 +160,3 @@ To revoke a secret, return to **Settings → Developer** and click **Revoke**.
 [claude-desktop]: https://claude.ai/download
 [bedrock]: https://aws.amazon.com/bedrock/
 [mcp-api]: ../mcp-api/README.md
-[secret-issue]: https://github.com/Team-Ailtir/app/issues/130
