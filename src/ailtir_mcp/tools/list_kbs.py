@@ -25,8 +25,6 @@ async def list_knowledge_bases(
     if not kbs:
         return "No knowledge bases found."
 
-    lines = [
-        f"- {kb.get('name', kb['id'])} (id: {kb['id']}, status: {kb['status']})" for kb in kbs
-    ]
+    lines = [f"- {kb.get('name', kb['id'])} (id: {kb['id']}, status: {kb['status']})" for kb in kbs]
     _log.info("list_kbs.returned", count=len(kbs))
     return "\n".join(lines)
