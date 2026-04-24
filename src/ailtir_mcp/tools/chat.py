@@ -22,7 +22,7 @@ async def chat(
     """
     await ctx.info(f"Querying kb_id: {kb_id}")
 
-    token = settings.ailtir_mcp_secret
+    token = settings.ailtir_mcp_api_token
     http = ctx.request_context.lifespan_context.http
     resp = await http.post(
         f"/kb/{kb_id}/chat",

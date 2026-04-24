@@ -2,4 +2,4 @@
 
 import os
 
-os.environ.setdefault("AILTIR_MCP_SECRET", "test-token-abc123")
+os.environ.setdefault("AILTIR_MCP_API_TOKEN", "test-token-abc123")

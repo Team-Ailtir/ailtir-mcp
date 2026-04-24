@@ -23,7 +23,7 @@ async def analyse(
     """
     await ctx.info(f"Starting analysis for kb_id: {kb_id}")
 
-    token = settings.ailtir_mcp_secret
+    token = settings.ailtir_mcp_api_token
     http = ctx.request_context.lifespan_context.http
     resp = await http.post(
         f"/kb/{kb_id}/analyse",

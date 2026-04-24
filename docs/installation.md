@@ -5,7 +5,7 @@ documents, build a knowledge base, and run RAG chat from within your AI assistan
 
 ## Step 1 — Get your MCP key
 
-The `AILTIR_MCP_SECRET` is a per-user token that authenticates the plugin against the
+The `AILTIR_MCP_API_TOKEN` is a per-user token that authenticates the plugin against the
 Ailtir API. Retrieve it from your Account page:
 
 1. Sign in to [app.ailtir.ai][app]

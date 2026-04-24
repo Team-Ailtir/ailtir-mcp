@@ -13,7 +13,7 @@ async def list_knowledge_bases(
     ctx: Context[ServerSession, AppContext],
 ) -> str:
     """List all knowledge bases in your Ailtir account."""
-    token = settings.ailtir_mcp_secret
+    token = settings.ailtir_mcp_api_token
     http = ctx.request_context.lifespan_context.http
     resp = await http.get(
         "/kb",

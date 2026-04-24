@@ -32,7 +32,7 @@ async def upload(
     await ctx.info(f"Uploading {path.name}")
 
     content = path.read_bytes()
-    token = settings.ailtir_mcp_secret
+    token = settings.ailtir_mcp_api_token
     http = ctx.request_context.lifespan_context.http
 
     reg_resp = await http.post(

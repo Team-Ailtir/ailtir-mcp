@@ -8,7 +8,7 @@ base, and run RAG chat — all from within your AI assistant.
 
 - Python 3.13+ (or [uv][uv] — no separate Python install needed with `uvx`)
 - An [Ailtir account][ailtir]
-- An `AILTIR_MCP_SECRET` — copy your MCP Key from the Ailtir app
+- An `AILTIR_MCP_API_TOKEN` — copy your MCP Key from the Ailtir app
   (see [Getting your secret](#getting-your-secret))
 
 ## Installation
@@ -21,7 +21,7 @@ https://astral.sh/uv/install.sh | sh`).
 
 ```bash
 claude mcp add ailtir uvx ailtir-mcp \
-  -e AILTIR_MCP_SECRET=your-secret-here
+  -e AILTIR_MCP_API_TOKEN=your-secret-here
 ```
 
 Or add manually to `.claude/settings.json`:
@@ -33,7 +33,7 @@ Or add manually to `.claude/settings.json`:
       "command": "uvx",
       "args": ["ailtir-mcp"],
       "env": {
-        "AILTIR_MCP_SECRET": "your-secret-here"
+        "AILTIR_MCP_API_TOKEN": "your-secret-here"
       }
     }
   }
@@ -53,7 +53,7 @@ Add the following to your `claude_desktop_config.json`
       "command": "uvx",
       "args": ["ailtir-mcp"],
       "env": {
-        "AILTIR_MCP_SECRET": "your-secret-here"
+        "AILTIR_MCP_API_TOKEN": "your-secret-here"
       }
     }
   }
@@ -144,7 +144,7 @@ chat(kb_id: string, question: string) → answer: string
 2. Click your avatar or name to open the **Account** page
 3. Find the **Secrets** cell and click **Reveal**
 4. Copy the **MCP Key** — it starts with `amcp_`
-5. Paste it as `AILTIR_MCP_SECRET` in your client config (see [Installation](#installation))
+5. Paste it as `AILTIR_MCP_API_TOKEN` in your client config (see [Installation](#installation))
 
 ## Links
 

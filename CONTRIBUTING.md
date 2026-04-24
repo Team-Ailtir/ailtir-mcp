@@ -10,7 +10,7 @@ see [CLAUDE.md][]. For what the project does and how to install it, see
 git clone https://github.com/Team-Ailtir/ailtir-mcp
 cd ailtir-mcp
 uv sync --group dev
-cp .env.example .env   # add your AILTIR_MCP_SECRET
+cp .env.example .env   # add your AILTIR_MCP_API_TOKEN
 ```
 
 ## Workflow

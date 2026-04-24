@@ -8,7 +8,7 @@ Add via the CLI (recommended):
 
 ```sh
 claude mcp add ailtir uvx ailtir-mcp \
-  -e AILTIR_MCP_SECRET=amcp_your-secret-here
+  -e AILTIR_MCP_API_TOKEN=amcp_your-secret-here
 ```
 
 Or add manually to `.claude/settings.json`:
@@ -20,7 +20,7 @@ Or add manually to `.claude/settings.json`:
       "command": "uvx",
       "args": ["ailtir-mcp"],
       "env": {
-        "AILTIR_MCP_SECRET": "amcp_your-secret-here"
+        "AILTIR_MCP_API_TOKEN": "amcp_your-secret-here"
       }
     }
   }
@@ -40,7 +40,7 @@ and add:
       "command": "uvx",
       "args": ["ailtir-mcp"],
       "env": {
-        "AILTIR_MCP_SECRET": "amcp_your-secret-here"
+        "AILTIR_MCP_API_TOKEN": "amcp_your-secret-here"
       }
     }
   }
