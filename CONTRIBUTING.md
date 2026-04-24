@@ -40,23 +40,15 @@ chmod 600 .pypi.token
 
 ### Steps
 
-1. Bump the version in `pyproject.toml` (`version = "x.y.z"`)
-2. Update `CHANGELOG.md` (if present) or ensure the git log is clean
-3. Commit and push:
-   ```bash
-   git add pyproject.toml
-   git commit -m "Release x.y.z"
-   git push
-   ```
-4. Tag the release:
-   ```bash
-   git tag vx.y.z
-   git push --tags
-   ```
-5. Build and publish:
-   ```bash
-   make publish    # runs: uv build && uv publish
-   ```
+```sh
+make bump-major   # 1.2.3 → 2.0.0  (breaking changes)
+make bump-minor   # 1.2.3 → 1.3.0  (new features)
+make bump-patch   # 1.2.3 → 1.2.4  (bug fixes)
+
+make release      # commit, tag, push, publish current pyproject.toml version
+```
+
+Run exactly one `bump-*` target, then `make release`.
 
 `make build` and `make publish` can also be run independently:
 

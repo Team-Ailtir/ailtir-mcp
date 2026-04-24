@@ -66,19 +66,35 @@ publish: build ## Build and publish to PyPI (reads UV_PUBLISH_TOKEN or .pypi.tok
 		uv publish; \
 	fi
 
-.PHONY: bump-version
-bump-version: ## Bump minor version (e.g. 1.1.0 → 1.2.0)
+.PHONY: bump-major
+bump-major: ## Bump major version (e.g. 1.2.3 → 2.0.0)
+	@current=$$(grep '^version' pyproject.toml | sed 's/version = "\(.*\)"/\1/' | cut -d'+' -f1); \
+	major=$$(echo $$current | cut -d'.' -f1); \
+	new_version="$$((major + 1)).0.0"; \
+	sed -i "s/^version = \".*\"/version = \"$$new_version\"/" pyproject.toml; \
+	echo "Version bumped to $$new_version"
+
+.PHONY: bump-minor
+bump-minor: ## Bump minor version (e.g. 1.2.3 → 1.3.0)
+	@current=$$(grep '^version' pyproject.toml | sed 's/version = "\(.*\)"/\1/' | cut -d'+' -f1); \
+	major=$$(echo $$current | cut -d'.' -f1); \
+	minor=$$(echo $$current | cut -d'.' -f2); \
+	new_version="$$major.$$((minor + 1)).0"; \
+	sed -i "s/^version = \".*\"/version = \"$$new_version\"/" pyproject.toml; \
+	echo "Version bumped to $$new_version"
+
+.PHONY: bump-patch
+bump-patch: ## Bump patch version (e.g. 1.2.3 → 1.2.4)
 	@current=$$(grep '^version' pyproject.toml | sed 's/version = "\(.*\)"/\1/' | cut -d'+' -f1); \
 	major=$$(echo $$current | cut -d'.' -f1); \
 	minor=$$(echo $$current | cut -d'.' -f2); \
 	patch=$$(echo $$current | cut -d'.' -f3); \
-	new_minor=$$((minor + 1)); \
-	new_version="$$major.$$new_minor.$$patch"; \
+	new_version="$$major.$$minor.$$((patch + 1))"; \
 	sed -i "s/^version = \".*\"/version = \"$$new_version\"/" pyproject.toml; \
 	echo "Version bumped to $$new_version"
 
 .PHONY: release
-release: bump-version ## Bump version, commit, tag, push, then publish to PyPI
+release: ## Commit, tag, push, and publish current version in pyproject.toml
 	@version=$$(grep '^version' pyproject.toml | sed 's/version = "\(.*\)"/\1/'); \
 	git add pyproject.toml && \
 	git commit -m "Bump version to $$version" && \
