@@ -69,6 +69,13 @@ docker-build: ## Build the Docker image
 	docker build -t $(GIT_REPO) .
 	docker tag $(GIT_REPO):latest $(GIT_REPO):$(GIT_SHA)
 
+.PHONY: docker-run
+docker-run: ## Run the HTTP server container locally (requires AILTIR_MCP_API_TOKEN)
+	docker run --rm -p 8000:8000 \
+		-e AILTIR_MCP_API_TOKEN=$(AILTIR_MCP_API_TOKEN) \
+		-e MCP_MOUNT_PATH=/mcp \
+		$(GIT_REPO):latest
+
 .PHONY: docker-push
 docker-push: ## Push Docker image to ECR
 	$(eval AWS_REPO := $(call get_aws_repo))

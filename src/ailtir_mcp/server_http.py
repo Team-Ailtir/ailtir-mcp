@@ -1,15 +1,11 @@
 """HTTP (Streamable HTTP) entrypoint for the ailtir-mcp server."""
 
-import contextlib
 import logging
-import typing
 
 import uvicorn
-from starlette.applications import Starlette
-from starlette.middleware import Middleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse
-from starlette.routing import Mount, Route
+from starlette.routing import Route
 from starlette.types import ASGIApp
 
 import ailtir_mcp.tools  # noqa: F401 — registers all tools with mcp instance
@@ -22,22 +18,11 @@ async def health(_: Request) -> JSONResponse:
     return JSONResponse({"status": "healthy"})
 
 
-def create_app() -> Starlette:
-    mcp_app = mcp.streamable_http_app()
-
-    @contextlib.asynccontextmanager
-    async def lifespan(_: ASGIApp) -> typing.AsyncIterator[None]:
-        async with mcp.session_manager.run():
-            yield
-
-    return Starlette(
-        lifespan=lifespan,
-        routes=[
-            Route(f"{settings.mcp_mount_path}/health", health),
-            Mount(settings.mcp_mount_path, mcp_app),
-        ],
-        middleware=[Middleware(BearerTokenMiddleware)],
-    )
+def create_app() -> ASGIApp:
+    mcp.settings.streamable_http_path = settings.mcp_mount_path
+    mcp._custom_starlette_routes.append(Route(f"{settings.mcp_mount_path}/health", health))
+    # Wrap at raw ASGI level — lifespan scope passes through transparently.
+    return BearerTokenMiddleware(mcp.streamable_http_app())
 
 
 def main() -> None:
