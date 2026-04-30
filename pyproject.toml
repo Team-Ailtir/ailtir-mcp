@@ -59,6 +59,13 @@ source = ["src"]
 url = "https://pypi.org/simple"
 default = true
 
+[tool.uv]
+package = true
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [tool.hatch.build]
 packages = ["src/ailtir_mcp"]
 
