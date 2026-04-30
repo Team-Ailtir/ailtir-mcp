@@ -5,7 +5,7 @@ import structlog
 from mcp.server.fastmcp import Context
 from mcp.server.session import ServerSession
 
-from ailtir_mcp.config import settings
+from ailtir_mcp.auth import get_token
 from ailtir_mcp.mcp import AppContext, mcp
 
 _log = structlog.get_logger(__name__)
@@ -16,7 +16,7 @@ async def profile_get(
     ctx: Context[ServerSession, AppContext],
 ) -> str:
     """Get the profile for the authenticated user."""
-    token = settings.ailtir_mcp_api_token
+    token = get_token()
     http = ctx.request_context.lifespan_context.http
     resp = await http.get(
         "/api-mcp/profiles/",
@@ -39,7 +39,7 @@ async def profile_create(
     Args:
         profile: Arbitrary JSON object to store as the profile.
     """
-    token = settings.ailtir_mcp_api_token
+    token = get_token()
     http = ctx.request_context.lifespan_context.http
     resp = await http.post(
         "/api-mcp/profiles/",
@@ -57,7 +57,7 @@ async def profile_delete(
     ctx: Context[ServerSession, AppContext],
 ) -> str:
     """Delete the profile for the authenticated user."""
-    token = settings.ailtir_mcp_api_token
+    token = get_token()
     http = ctx.request_context.lifespan_context.http
     resp = await http.delete(
         "/api-mcp/profiles/",

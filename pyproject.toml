@@ -13,11 +13,14 @@ dependencies = [
     "httpx>=0.28.1",
     "mcp[cli]>=1.9.0",
     "pydantic-settings>=2.10.1",
+    "starlette>=0.46.0",
     "structlog>=25.4.0",
+    "uvicorn>=0.34.0",
 ]
 
 [project.scripts]
 ailtir-mcp = "ailtir_mcp.server:main"
+ailtir-mcp-http = "ailtir_mcp.server_http:main"
 
 [project.urls]
 Homepage = "https://ailtir.ai"
@@ -43,8 +46,10 @@ exclude_lines = [
 ]
 omit = [
     "src/**/__init__.py",
+    "src/**/auth.py",
     "src/**/config.py",
     "src/**/server.py",
+    "src/**/server_http.py",
 ]
 
 [tool.coverage.run]
