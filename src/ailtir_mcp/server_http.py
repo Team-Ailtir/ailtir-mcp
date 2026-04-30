@@ -27,7 +27,12 @@ def create_app() -> ASGIApp:
 
 def main() -> None:
     logging.basicConfig(level=logging.WARNING)
-    uvicorn.run(create_app(), host=settings.mcp_host, port=settings.mcp_port)
+    uvicorn.run(
+        create_app(),
+        host=settings.mcp_host,
+        port=settings.mcp_port,
+        forwarded_allow_ips="*",
+    )
 
 
 if __name__ == "__main__":
