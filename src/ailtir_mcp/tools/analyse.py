@@ -26,7 +26,7 @@ async def analyse(
     token = settings.ailtir_mcp_api_token
     http = ctx.request_context.lifespan_context.http
     resp = await http.post(
-        f"/kb/{kb_id}/analyse",
+        f"/api-mcp/kbs/{kb_id}/analyse",
         headers={"Authorization": f"Bearer {token}"},
     )
     resp.raise_for_status()

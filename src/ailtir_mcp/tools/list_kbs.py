@@ -16,7 +16,7 @@ async def list_knowledge_bases(
     token = settings.ailtir_mcp_api_token
     http = ctx.request_context.lifespan_context.http
     resp = await http.get(
-        "/kb",
+        "/api-mcp/kbs/",
         headers={"Authorization": f"Bearer {token}"},
     )
     resp.raise_for_status()
@@ -25,8 +25,6 @@ async def list_knowledge_bases(
     if not kbs:
         return "No knowledge bases found."
 
-    lines = [
-        f"- {kb.get('name', kb['kb_id'])} (id: {kb['kb_id']}, status: {kb['status']})" for kb in kbs
-    ]
+    lines = [f"- {kb.get('name', kb['id'])} (id: {kb['id']}, status: {kb['status']})" for kb in kbs]
     _log.info("list_kbs.returned", count=len(kbs))
     return "\n".join(lines)

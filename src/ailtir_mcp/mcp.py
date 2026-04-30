@@ -19,7 +19,7 @@ class AppContext:
 @contextlib.asynccontextmanager
 async def _lifespan(server: FastMCP) -> typing.AsyncIterator[AppContext]:
     _log.info("ailtir_mcp.starting")
-    async with httpx.AsyncClient(base_url=settings.mcp_api_url, timeout=30.0) as http:
+    async with httpx.AsyncClient(base_url=settings.api_mcp_url, timeout=30.0) as http:
         yield AppContext(http=http)
     _log.info("ailtir_mcp.stopped")
 

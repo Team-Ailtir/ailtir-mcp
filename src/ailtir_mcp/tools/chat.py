@@ -25,7 +25,7 @@ async def chat(
     token = settings.ailtir_mcp_api_token
     http = ctx.request_context.lifespan_context.http
     resp = await http.post(
-        f"/kb/{kb_id}/chat",
+        f"/api-mcp/kbs/{kb_id}/chat",
         json={"question": question},
         headers={"Authorization": f"Bearer {token}"},
     )

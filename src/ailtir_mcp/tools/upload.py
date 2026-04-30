@@ -36,13 +36,13 @@ async def upload(
     http = ctx.request_context.lifespan_context.http
 
     reg_resp = await http.post(
-        "/kb",
+        "/api-mcp/kbs/",
         json={"file_name": path.name},
         headers={"Authorization": f"Bearer {token}"},
     )
     reg_resp.raise_for_status()
     reg = reg_resp.json()
-    kb_id: str = reg["kb_id"]
+    kb_id: str = reg["id"]
     upload_url: str = reg["upload_url"]
 
     # PUT directly to S3 via the presigned URL — no auth header, S3 auth is in the URL.

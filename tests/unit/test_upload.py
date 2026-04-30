@@ -9,7 +9,7 @@ from ailtir_mcp.tools.upload import upload
 
 KB_ID = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
 UPLOAD_URL = "https://uploads.ailtir.ai.s3.amazonaws.com/kbs/tenant/kb/?X-Amz-Signature=abc"
-REG_RESPONSE = {"kb_id": KB_ID, "upload_url": UPLOAD_URL}
+REG_RESPONSE = {"id": KB_ID, "upload_url": UPLOAD_URL}
 
 
 @pytest.fixture
@@ -21,7 +21,9 @@ def zip_file(tmp_path: pathlib.Path) -> pathlib.Path:
 
 @respx.mock
 async def test_upload_success(mock_ctx: MagicMock, zip_file: pathlib.Path) -> None:
-    respx.post("http://test-mcp-api/kb").mock(return_value=Response(201, json=REG_RESPONSE))
+    respx.post("http://test-mcp-api/api-mcp/kbs/").mock(
+        return_value=Response(201, json=REG_RESPONSE)
+    )
     respx.put(UPLOAD_URL).mock(return_value=Response(200))
 
     result = await upload(str(zip_file), mock_ctx)
@@ -31,7 +33,9 @@ async def test_upload_success(mock_ctx: MagicMock, zip_file: pathlib.Path) -> No
 
 @respx.mock
 async def test_upload_puts_correct_content(mock_ctx: MagicMock, zip_file: pathlib.Path) -> None:
-    respx.post("http://test-mcp-api/kb").mock(return_value=Response(201, json=REG_RESPONSE))
+    respx.post("http://test-mcp-api/api-mcp/kbs/").mock(
+        return_value=Response(201, json=REG_RESPONSE)
+    )
     s3_route = respx.put(UPLOAD_URL).mock(return_value=Response(200))
 
     await upload(str(zip_file), mock_ctx)
@@ -44,7 +48,9 @@ async def test_upload_puts_correct_content(mock_ctx: MagicMock, zip_file: pathli
 
 @respx.mock
 async def test_upload_sends_token_to_mcp_api(mock_ctx: MagicMock, zip_file: pathlib.Path) -> None:
-    route = respx.post("http://test-mcp-api/kb").mock(return_value=Response(201, json=REG_RESPONSE))
+    route = respx.post("http://test-mcp-api/api-mcp/kbs/").mock(
+        return_value=Response(201, json=REG_RESPONSE)
+    )
     respx.put(UPLOAD_URL).mock(return_value=Response(200))
 
     await upload(str(zip_file), mock_ctx)
