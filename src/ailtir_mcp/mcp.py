@@ -5,6 +5,7 @@ from dataclasses import dataclass
 import httpx
 import structlog
 from mcp.server.fastmcp import FastMCP
+from mcp.server.transport_security import TransportSecuritySettings
 
 from ailtir_mcp.config import settings
 
@@ -24,4 +25,12 @@ async def _lifespan(server: FastMCP) -> typing.AsyncIterator[AppContext]:
     _log.info("ailtir_mcp.stopped")
 
 
-mcp: FastMCP = FastMCP("ailtir-mcp", lifespan=_lifespan)
+# Disable DNS rebinding protection — the server runs behind the AWS ALB which
+# forwards requests with the public Host header (app.ailtir.ai).
+_transport_security = TransportSecuritySettings(enable_dns_rebinding_protection=False)
+
+mcp: FastMCP = FastMCP(
+    "ailtir-mcp",
+    lifespan=_lifespan,
+    transport_security=_transport_security,
+)
