@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 import respx
 from httpx import Response
 
-from ailtir_mcp.tools.list_kbs import list_knowledge_bases
+from ailtir_mcp.tools.kb_list import list_knowledge_bases
 
 
 @respx.mock

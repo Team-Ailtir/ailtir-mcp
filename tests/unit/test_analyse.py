@@ -5,7 +5,7 @@ import pytest
 import respx
 from httpx import Response
 
-from ailtir_mcp.tools.analyse import analyse
+from ailtir_mcp.tools.kb_analyse import analyse
 
 
 @respx.mock

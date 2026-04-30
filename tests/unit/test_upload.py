@@ -5,7 +5,7 @@ import pytest
 import respx
 from httpx import Response
 
-from ailtir_mcp.tools.upload import upload
+from ailtir_mcp.tools.kb_upload import upload
 
 KB_ID = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
 UPLOAD_URL = "https://uploads.ailtir.ai.s3.amazonaws.com/kbs/tenant/kb/?X-Amz-Signature=abc"

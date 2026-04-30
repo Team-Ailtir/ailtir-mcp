@@ -5,7 +5,7 @@ import pytest
 import respx
 from httpx import Response
 
-from ailtir_mcp.tools.chat import chat
+from ailtir_mcp.tools.kb_chat import chat
 
 
 @respx.mock
