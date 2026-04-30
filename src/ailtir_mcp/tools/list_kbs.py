@@ -8,7 +8,7 @@ from ailtir_mcp.mcp import AppContext, mcp
 _log = structlog.get_logger(__name__)
 
 
-@mcp.tool(name="list")
+@mcp.tool(name="kb_list")
 async def list_knowledge_bases(
     ctx: Context[ServerSession, AppContext],
 ) -> str:

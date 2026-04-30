@@ -8,7 +8,7 @@ from ailtir_mcp.mcp import AppContext, mcp
 _log = structlog.get_logger(__name__)
 
 
-@mcp.tool()
+@mcp.tool(name="kb_chat")
 async def chat(
     kb_id: str,
     question: str,

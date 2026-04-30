@@ -11,7 +11,7 @@ from ailtir_mcp.mcp import AppContext, mcp
 _log = structlog.get_logger(__name__)
 
 
-@mcp.tool()
+@mcp.tool(name="kb_upload")
 async def upload(
     file_path: str,
     ctx: Context[ServerSession, AppContext],
