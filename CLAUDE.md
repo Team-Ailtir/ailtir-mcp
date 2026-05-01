@@ -206,7 +206,9 @@ The `autouse` `reset_bearer_token` fixture clears `_bearer_token` before every t
 
 All settings are read from environment variables (no `.env` file in production).
 
-| Variable | Default | Description |
+All variables are required (no defaults) except `AILTIR_MCP_API_TOKEN`.
+
+| Variable | Example | Description |
 |----------|---------|-------------|
 | `AILTIR_MCP_API_TOKEN` | `""` | Per-user bearer token (stdio); not used for HTTP transport |
 | `API_MCP_URL` | `https://app.ailtir.ai/api-mcp` | api-mcp base URL |
@@ -214,7 +216,7 @@ All settings are read from environment variables (no `.env` file in production).
 | `MCP_PORT` | `8000` | Bind port for HTTP transport |
 | `MCP_MOUNT_PATH` | `/ailtir-mcp` | URL prefix for HTTP transport (set to `/mcp` locally) |
 | `LOG_LEVEL` | `INFO` | `DEBUG` / `INFO` |
-| `LOG_FORMAT` | `console` | `console` (dev) / `json` (prod) |
+| `LOG_FORMAT` | `json` | `console` (dev) / `json` (prod) |
 
 ## Deployment
 
