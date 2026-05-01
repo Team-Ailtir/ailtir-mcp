@@ -28,7 +28,7 @@ async def analyse(
         token = get_token()
         http = ctx.request_context.lifespan_context.http
         resp = await http.post(
-            f"/kbs/{kb_id}/analyse",
+            f"/api-mcp/kbs/{kb_id}/analyse",
             headers={"Authorization": f"Bearer {token}"},
         )
         resp.raise_for_status()

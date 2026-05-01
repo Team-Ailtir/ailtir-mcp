@@ -22,7 +22,7 @@ async def profile_get(
         token = get_token()
         http = ctx.request_context.lifespan_context.http
         resp = await http.get(
-            "/profiles/",
+            "/api-mcp/profiles/",
             headers={"Authorization": f"Bearer {token}"},
         )
         resp.raise_for_status()
@@ -51,7 +51,7 @@ async def profile_create(
         token = get_token()
         http = ctx.request_context.lifespan_context.http
         resp = await http.post(
-            "/profiles/",
+            "/api-mcp/profiles/",
             json={"profile": profile},
             headers={"Authorization": f"Bearer {token}"},
         )
@@ -75,7 +75,7 @@ async def profile_delete(
         token = get_token()
         http = ctx.request_context.lifespan_context.http
         resp = await http.delete(
-            "/profiles/",
+            "/api-mcp/profiles/",
             headers={"Authorization": f"Bearer {token}"},
         )
         resp.raise_for_status()

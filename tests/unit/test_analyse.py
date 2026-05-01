@@ -10,7 +10,7 @@ from ailtir_mcp.tools.kb_analyse import analyse
 
 @respx.mock
 async def test_analyse_success(mock_ctx: MagicMock) -> None:
-    respx.post("http://test-mcp-api/kbs/kb-123/analyse").mock(return_value=Response(202))
+    respx.post("http://test-mcp-api/api-mcp/kbs/kb-123/analyse").mock(return_value=Response(202))
 
     result = await analyse("kb-123", mock_ctx)
 
@@ -20,7 +20,7 @@ async def test_analyse_success(mock_ctx: MagicMock) -> None:
 
 @respx.mock
 async def test_analyse_passes_token(mock_ctx: MagicMock) -> None:
-    route = respx.post("http://test-mcp-api/kbs/kb-123/analyse").mock(
+    route = respx.post("http://test-mcp-api/api-mcp/kbs/kb-123/analyse").mock(
         return_value=Response(202)
     )
 
@@ -31,7 +31,7 @@ async def test_analyse_passes_token(mock_ctx: MagicMock) -> None:
 
 @respx.mock
 async def test_analyse_propagates_http_error(mock_ctx: MagicMock) -> None:
-    respx.post("http://test-mcp-api/kbs/kb-404/analyse").mock(return_value=Response(404))
+    respx.post("http://test-mcp-api/api-mcp/kbs/kb-404/analyse").mock(return_value=Response(404))
 
     with pytest.raises(httpx.HTTPStatusError):
         await analyse("kb-404", mock_ctx)

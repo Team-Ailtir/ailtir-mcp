@@ -8,7 +8,7 @@ from ailtir_mcp.tools.kb_list import list_knowledge_bases
 
 @respx.mock
 async def test_list_returns_formatted_kbs(mock_ctx: MagicMock) -> None:
-    respx.get("http://test-mcp-api/kbs/").mock(
+    respx.get("http://test-mcp-api/api-mcp/kbs/").mock(
         return_value=Response(
             200,
             json=[
@@ -28,7 +28,7 @@ async def test_list_returns_formatted_kbs(mock_ctx: MagicMock) -> None:
 
 @respx.mock
 async def test_list_empty(mock_ctx: MagicMock) -> None:
-    respx.get("http://test-mcp-api/kbs/").mock(return_value=Response(200, json=[]))
+    respx.get("http://test-mcp-api/api-mcp/kbs/").mock(return_value=Response(200, json=[]))
 
     result = await list_knowledge_bases(mock_ctx)
 
@@ -37,7 +37,7 @@ async def test_list_empty(mock_ctx: MagicMock) -> None:
 
 @respx.mock
 async def test_list_passes_token(mock_ctx: MagicMock) -> None:
-    route = respx.get("http://test-mcp-api/kbs/").mock(return_value=Response(200, json=[]))
+    route = respx.get("http://test-mcp-api/api-mcp/kbs/").mock(return_value=Response(200, json=[]))
 
     await list_knowledge_bases(mock_ctx)
 

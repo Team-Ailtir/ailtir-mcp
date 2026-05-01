@@ -19,7 +19,7 @@ async def list_knowledge_bases(
         token = get_token()
         http = ctx.request_context.lifespan_context.http
         resp = await http.get(
-            "/kbs/",
+            "/api-mcp/kbs/",
             headers={"Authorization": f"Bearer {token}"},
         )
         resp.raise_for_status()

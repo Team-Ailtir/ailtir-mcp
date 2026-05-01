@@ -21,7 +21,7 @@ def zip_file(tmp_path: pathlib.Path) -> pathlib.Path:
 
 @respx.mock
 async def test_upload_success(mock_ctx: MagicMock, zip_file: pathlib.Path) -> None:
-    respx.post("http://test-mcp-api/kbs/").mock(
+    respx.post("http://test-mcp-api/api-mcp/kbs/").mock(
         return_value=Response(201, json=REG_RESPONSE)
     )
     respx.put(UPLOAD_URL).mock(return_value=Response(200))
@@ -33,7 +33,7 @@ async def test_upload_success(mock_ctx: MagicMock, zip_file: pathlib.Path) -> No
 
 @respx.mock
 async def test_upload_puts_correct_content(mock_ctx: MagicMock, zip_file: pathlib.Path) -> None:
-    respx.post("http://test-mcp-api/kbs/").mock(
+    respx.post("http://test-mcp-api/api-mcp/kbs/").mock(
         return_value=Response(201, json=REG_RESPONSE)
     )
     s3_route = respx.put(UPLOAD_URL).mock(return_value=Response(200))
@@ -48,7 +48,7 @@ async def test_upload_puts_correct_content(mock_ctx: MagicMock, zip_file: pathli
 
 @respx.mock
 async def test_upload_sends_token_to_mcp_api(mock_ctx: MagicMock, zip_file: pathlib.Path) -> None:
-    route = respx.post("http://test-mcp-api/kbs/").mock(
+    route = respx.post("http://test-mcp-api/api-mcp/kbs/").mock(
         return_value=Response(201, json=REG_RESPONSE)
     )
     respx.put(UPLOAD_URL).mock(return_value=Response(200))
