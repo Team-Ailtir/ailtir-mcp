@@ -10,7 +10,7 @@ from ailtir_mcp.tools.profiles import profile_create, profile_delete, profile_ge
 
 @respx.mock
 async def test_profile_get_success(mock_ctx: MagicMock) -> None:
-    respx.get("http://test-mcp-api/api-mcp/profiles/").mock(
+    respx.get("http://test-mcp-api/profiles/").mock(
         return_value=Response(
             200, json={"id": "abc", "user_id": "u1", "profile": {"role": "admin"}}
         )
@@ -23,7 +23,7 @@ async def test_profile_get_success(mock_ctx: MagicMock) -> None:
 
 @respx.mock
 async def test_profile_get_passes_token(mock_ctx: MagicMock) -> None:
-    route = respx.get("http://test-mcp-api/api-mcp/profiles/").mock(
+    route = respx.get("http://test-mcp-api/profiles/").mock(
         return_value=Response(200, json={"id": "abc", "user_id": "u1", "profile": {}})
     )
 
@@ -34,7 +34,7 @@ async def test_profile_get_passes_token(mock_ctx: MagicMock) -> None:
 
 @respx.mock
 async def test_profile_get_propagates_http_error(mock_ctx: MagicMock) -> None:
-    respx.get("http://test-mcp-api/api-mcp/profiles/").mock(return_value=Response(404))
+    respx.get("http://test-mcp-api/profiles/").mock(return_value=Response(404))
 
     with pytest.raises(httpx.HTTPStatusError):
         await profile_get(mock_ctx)
@@ -42,7 +42,7 @@ async def test_profile_get_propagates_http_error(mock_ctx: MagicMock) -> None:
 
 @respx.mock
 async def test_profile_create_success(mock_ctx: MagicMock) -> None:
-    respx.post("http://test-mcp-api/api-mcp/profiles/").mock(return_value=Response(201, json={}))
+    respx.post("http://test-mcp-api/profiles/").mock(return_value=Response(201, json={}))
 
     result = await profile_create({"role": "admin"}, mock_ctx)
 
@@ -53,7 +53,7 @@ async def test_profile_create_success(mock_ctx: MagicMock) -> None:
 async def test_profile_create_sends_body(mock_ctx: MagicMock) -> None:
     import json
 
-    route = respx.post("http://test-mcp-api/api-mcp/profiles/").mock(
+    route = respx.post("http://test-mcp-api/profiles/").mock(
         return_value=Response(201, json={})
     )
 
@@ -65,7 +65,7 @@ async def test_profile_create_sends_body(mock_ctx: MagicMock) -> None:
 
 @respx.mock
 async def test_profile_create_passes_token(mock_ctx: MagicMock) -> None:
-    route = respx.post("http://test-mcp-api/api-mcp/profiles/").mock(
+    route = respx.post("http://test-mcp-api/profiles/").mock(
         return_value=Response(201, json={})
     )
 
@@ -76,7 +76,7 @@ async def test_profile_create_passes_token(mock_ctx: MagicMock) -> None:
 
 @respx.mock
 async def test_profile_create_conflict(mock_ctx: MagicMock) -> None:
-    respx.post("http://test-mcp-api/api-mcp/profiles/").mock(return_value=Response(409))
+    respx.post("http://test-mcp-api/profiles/").mock(return_value=Response(409))
 
     with pytest.raises(httpx.HTTPStatusError):
         await profile_create({}, mock_ctx)
@@ -84,7 +84,7 @@ async def test_profile_create_conflict(mock_ctx: MagicMock) -> None:
 
 @respx.mock
 async def test_profile_delete_success(mock_ctx: MagicMock) -> None:
-    respx.delete("http://test-mcp-api/api-mcp/profiles/").mock(return_value=Response(204))
+    respx.delete("http://test-mcp-api/profiles/").mock(return_value=Response(204))
 
     result = await profile_delete(mock_ctx)
 
@@ -93,7 +93,7 @@ async def test_profile_delete_success(mock_ctx: MagicMock) -> None:
 
 @respx.mock
 async def test_profile_delete_passes_token(mock_ctx: MagicMock) -> None:
-    route = respx.delete("http://test-mcp-api/api-mcp/profiles/").mock(return_value=Response(204))
+    route = respx.delete("http://test-mcp-api/profiles/").mock(return_value=Response(204))
 
     await profile_delete(mock_ctx)
 

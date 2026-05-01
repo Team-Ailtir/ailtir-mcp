@@ -40,7 +40,7 @@ async def upload(
 
         _log.debug("kb_upload.registering", file_name=path.name, size_bytes=len(content))
         reg_resp = await http.post(
-            "/api-mcp/kbs/",
+            "/kbs/",
             json={"file_name": path.name},
             headers={"Authorization": f"Bearer {token}"},
         )
