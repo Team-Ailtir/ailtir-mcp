@@ -1,3 +1,7 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 # ailtir-mcp — Developer Guide
 
 The Ailtir MCP server. For user-facing installation and tool docs, see the
@@ -155,6 +159,16 @@ AILTIR_MCP_API_TOKEN=your-secret make serve-http  # HTTP server on :8000/mcp
 make inspect           # MCP Inspector via mcp dev
 make tests-unit        # pytest with coverage
 make checks            # format + lint + type-check + security
+make checks-fix        # auto-fix formatting and lint issues
+make docker-build      # build Docker image
+make docker-run        # run HTTP server container locally
+make bump-patch        # bump patch version (also: bump-minor, bump-major)
+make release           # commit, tag, push, and publish to PyPI
+```
+
+To run a single test:
+```bash
+uv run pytest tests/unit/test_chat.py::test_chat_success
 ```
 
 For local HTTP development, `serve-http` sets `MCP_MOUNT_PATH=/mcp` (not `/ailtir-mcp`)
