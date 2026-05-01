@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     ailtir_mcp_api_token: str = Field(default="")
     log_format: str = Field(default="console")
     log_level: str = Field(default="INFO")
-    api_mcp_url: str = Field(default="https://app.ailtir.ai/api-mcp")
+    api_mcp_url: str = Field(default="https://app.ailtir.ai/api-mcp", validation_alias="MCP_API_URL")
     mcp_host: str = Field(default="0.0.0.0")  # noqa: S104
     mcp_port: int = Field(default=8000)
     mcp_mount_path: str = Field(default="/ailtir-mcp")
