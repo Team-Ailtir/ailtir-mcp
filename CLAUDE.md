@@ -209,7 +209,7 @@ All settings are read from environment variables (no `.env` file in production).
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `AILTIR_MCP_API_TOKEN` | `""` | Per-user bearer token (stdio); not used for HTTP transport |
-| `MCP_API_URL` | `https://app.ailtir.ai/api-mcp` | api-mcp base URL |
+| `API_MCP_URL` | `https://app.ailtir.ai/api-mcp` | api-mcp base URL |
 | `MCP_HOST` | `0.0.0.0` | Bind host for HTTP transport |
 | `MCP_PORT` | `8000` | Bind port for HTTP transport |
 | `MCP_MOUNT_PATH` | `/ailtir-mcp` | URL prefix for HTTP transport (set to `/mcp` locally) |
