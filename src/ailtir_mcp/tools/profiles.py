@@ -16,17 +16,23 @@ async def profile_get(
     ctx: Context[ServerSession, AppContext],
 ) -> str:
     """Get the profile for the authenticated user."""
-    token = get_token()
-    http = ctx.request_context.lifespan_context.http
-    resp = await http.get(
-        "/api-mcp/profiles/",
-        headers={"Authorization": f"Bearer {token}"},
-    )
-    resp.raise_for_status()
+    _log.debug("profile_get.start")
 
-    data = resp.json()
-    _log.info("profile_get.done")
-    return json.dumps(data.get("profile", {}))
+    try:
+        token = get_token()
+        http = ctx.request_context.lifespan_context.http
+        resp = await http.get(
+            "/api-mcp/profiles/",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        resp.raise_for_status()
+
+        data = resp.json()
+        _log.info("profile_get.done")
+        return json.dumps(data.get("profile", {}))
+    except Exception:
+        _log.exception("profile_get.error")
+        raise
 
 
 @mcp.tool(name="profile_create")
@@ -39,17 +45,23 @@ async def profile_create(
     Args:
         profile: Arbitrary JSON object to store as the profile.
     """
-    token = get_token()
-    http = ctx.request_context.lifespan_context.http
-    resp = await http.post(
-        "/api-mcp/profiles/",
-        json={"profile": profile},
-        headers={"Authorization": f"Bearer {token}"},
-    )
-    resp.raise_for_status()
+    _log.debug("profile_create.start", keys=list(profile.keys()))
 
-    _log.info("profile_create.done")
-    return "Profile created."
+    try:
+        token = get_token()
+        http = ctx.request_context.lifespan_context.http
+        resp = await http.post(
+            "/api-mcp/profiles/",
+            json={"profile": profile},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        resp.raise_for_status()
+
+        _log.info("profile_create.done")
+        return "Profile created."
+    except Exception:
+        _log.exception("profile_create.error")
+        raise
 
 
 @mcp.tool(name="profile_delete")
@@ -57,13 +69,19 @@ async def profile_delete(
     ctx: Context[ServerSession, AppContext],
 ) -> str:
     """Delete the profile for the authenticated user."""
-    token = get_token()
-    http = ctx.request_context.lifespan_context.http
-    resp = await http.delete(
-        "/api-mcp/profiles/",
-        headers={"Authorization": f"Bearer {token}"},
-    )
-    resp.raise_for_status()
+    _log.debug("profile_delete.start")
 
-    _log.info("profile_delete.done")
-    return "Profile deleted."
+    try:
+        token = get_token()
+        http = ctx.request_context.lifespan_context.http
+        resp = await http.delete(
+            "/api-mcp/profiles/",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        resp.raise_for_status()
+
+        _log.info("profile_delete.done")
+        return "Profile deleted."
+    except Exception:
+        _log.exception("profile_delete.error")
+        raise

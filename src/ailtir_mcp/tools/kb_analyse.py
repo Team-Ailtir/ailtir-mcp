@@ -21,18 +21,23 @@ async def analyse(
     Args:
         kb_id: The knowledge base ID returned by the upload tool.
     """
+    _log.debug("kb_analyse.start", kb_id=kb_id)
     await ctx.info(f"Starting analysis for kb_id: {kb_id}")
 
-    token = get_token()
-    http = ctx.request_context.lifespan_context.http
-    resp = await http.post(
-        f"/api-mcp/kbs/{kb_id}/analyse",
-        headers={"Authorization": f"Bearer {token}"},
-    )
-    resp.raise_for_status()
+    try:
+        token = get_token()
+        http = ctx.request_context.lifespan_context.http
+        resp = await http.post(
+            f"/api-mcp/kbs/{kb_id}/analyse",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        resp.raise_for_status()
 
-    _log.info("analyse.started", kb_id=kb_id)
-    return (
-        f"Analysis started for kb_id: {kb_id}. "
-        "This typically takes a few minutes. Use the list tool to check status."
-    )
+        _log.info("kb_analyse.started", kb_id=kb_id)
+        return (
+            f"Analysis started for kb_id: {kb_id}. "
+            "This typically takes a few minutes. Use the list tool to check status."
+        )
+    except Exception:
+        _log.exception("kb_analyse.error", kb_id=kb_id)
+        raise

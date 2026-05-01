@@ -1,15 +1,30 @@
+import asyncio
 from contextvars import ContextVar
 
+import structlog
 from starlette.types import ASGIApp, Receive, Scope, Send
 
 from ailtir_mcp.config import settings
 
 _bearer_token: ContextVar[str | None] = ContextVar("bearer_token", default=None)
 
+_log = structlog.get_logger(__name__)
+
 
 def get_token() -> str:
     """Return the bearer token for the current request or fall back to env settings."""
     token = _bearer_token.get()
+    try:
+        task = asyncio.current_task()
+        task_name = task.get_name() if task is not None else "no-task"
+    except RuntimeError:
+        task_name = "no-event-loop"
+    _log.debug(
+        "get_token",
+        bearer_set=token is not None,
+        env_set=bool(settings.ailtir_mcp_api_token),
+        task=task_name,
+    )
     if token:
         return token
     if settings.ailtir_mcp_api_token:
@@ -34,6 +49,12 @@ class BearerTokenMiddleware:
                     break
             auth = auth_value.decode()
             tok = auth[7:] if auth.lower().startswith("bearer ") else None
+            _log.debug(
+                "middleware.bearer",
+                scope_type=scope["type"],
+                path=scope.get("path", ""),
+                token_present=tok is not None,
+            )
             reset_tok = _bearer_token.set(tok)
             try:
                 await self.app(scope, receive, send)

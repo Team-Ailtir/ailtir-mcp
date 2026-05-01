@@ -13,18 +13,26 @@ async def list_knowledge_bases(
     ctx: Context[ServerSession, AppContext],
 ) -> str:
     """List all knowledge bases in your Ailtir account."""
-    token = get_token()
-    http = ctx.request_context.lifespan_context.http
-    resp = await http.get(
-        "/api-mcp/kbs/",
-        headers={"Authorization": f"Bearer {token}"},
-    )
-    resp.raise_for_status()
+    _log.debug("kb_list.start")
 
-    kbs = resp.json()
-    if not kbs:
-        return "No knowledge bases found."
+    try:
+        token = get_token()
+        http = ctx.request_context.lifespan_context.http
+        resp = await http.get(
+            "/api-mcp/kbs/",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        resp.raise_for_status()
 
-    lines = [f"- {kb.get('name', kb['id'])} (id: {kb['id']}, status: {kb['status']})" for kb in kbs]
-    _log.info("list_kbs.returned", count=len(kbs))
-    return "\n".join(lines)
+        kbs = resp.json()
+        _log.info("kb_list.done", count=len(kbs))
+        if not kbs:
+            return "No knowledge bases found."
+
+        lines = [
+            f"- {kb.get('name', kb['id'])} (id: {kb['id']}, status: {kb['status']})" for kb in kbs
+        ]
+        return "\n".join(lines)
+    except Exception:
+        _log.exception("kb_list.error")
+        raise

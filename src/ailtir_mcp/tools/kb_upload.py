@@ -21,6 +21,8 @@ async def upload(
     Args:
         file_path: Absolute path to the ZIP file to upload.
     """
+    _log.debug("kb_upload.start", file_path=file_path)
+
     path = pathlib.Path(file_path)
     if not path.is_absolute():
         return "Error: file_path must be an absolute path."
@@ -31,29 +33,35 @@ async def upload(
 
     await ctx.info(f"Uploading {path.name}")
 
-    content = path.read_bytes()
-    token = get_token()
-    http = ctx.request_context.lifespan_context.http
+    try:
+        content = path.read_bytes()
+        token = get_token()
+        http = ctx.request_context.lifespan_context.http
 
-    reg_resp = await http.post(
-        "/api-mcp/kbs/",
-        json={"file_name": path.name},
-        headers={"Authorization": f"Bearer {token}"},
-    )
-    reg_resp.raise_for_status()
-    reg = reg_resp.json()
-    kb_id: str = reg["id"]
-    upload_url: str = reg["upload_url"]
-
-    # PUT directly to S3 via the presigned URL — no auth header, S3 auth is in the URL.
-    async with httpx.AsyncClient(timeout=None) as s3_client:  # noqa: S113
-        s3_resp = await s3_client.put(
-            upload_url,
-            content=content,
-            headers={"Content-Type": "application/zip"},
+        _log.debug("kb_upload.registering", file_name=path.name, size_bytes=len(content))
+        reg_resp = await http.post(
+            "/api-mcp/kbs/",
+            json={"file_name": path.name},
+            headers={"Authorization": f"Bearer {token}"},
         )
-        s3_resp.raise_for_status()
+        reg_resp.raise_for_status()
+        reg = reg_resp.json()
+        kb_id: str = reg["id"]
+        upload_url: str = reg["upload_url"]
+        _log.debug("kb_upload.registered", kb_id=kb_id)
 
-    _log.info("upload.done", kb_id=kb_id)
-    await ctx.info(f"Upload complete. kb_id: {kb_id}")
-    return kb_id
+        # PUT directly to S3 via the presigned URL — no auth header, S3 auth is in the URL.
+        async with httpx.AsyncClient(timeout=None) as s3_client:  # noqa: S113
+            s3_resp = await s3_client.put(
+                upload_url,
+                content=content,
+                headers={"Content-Type": "application/zip"},
+            )
+            s3_resp.raise_for_status()
+
+        _log.info("kb_upload.done", kb_id=kb_id, size_bytes=len(content))
+        await ctx.info(f"Upload complete. kb_id: {kb_id}")
+        return kb_id
+    except Exception:
+        _log.exception("kb_upload.error", file_path=file_path)
+        raise

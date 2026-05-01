@@ -20,17 +20,22 @@ async def chat(
         kb_id: The knowledge base ID to query.
         question: Your natural-language question.
     """
+    _log.debug("kb_chat.start", kb_id=kb_id, question_len=len(question))
     await ctx.info(f"Querying kb_id: {kb_id}")
 
-    token = get_token()
-    http = ctx.request_context.lifespan_context.http
-    resp = await http.post(
-        f"/api-mcp/kbs/{kb_id}/chat",
-        json={"question": question},
-        headers={"Authorization": f"Bearer {token}"},
-    )
-    resp.raise_for_status()
+    try:
+        token = get_token()
+        http = ctx.request_context.lifespan_context.http
+        resp = await http.post(
+            f"/api-mcp/kbs/{kb_id}/chat",
+            json={"question": question},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        resp.raise_for_status()
 
-    data = resp.json()
-    _log.info("chat.answered", kb_id=kb_id)
-    return str(data.get("answer", "No answer returned."))
+        data = resp.json()
+        _log.info("kb_chat.answered", kb_id=kb_id)
+        return str(data.get("answer", "No answer returned."))
+    except Exception:
+        _log.exception("kb_chat.error", kb_id=kb_id)
+        raise
