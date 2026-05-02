@@ -17,8 +17,8 @@ The Ailtir MCP server. For user-facing installation and tool docs, see the
 Both transports share the same FastMCP instance and tool implementations.
 
 ```
-MCP client (stdio)  →  ailtir-mcp (stdio, FastMCP)  →  api-mcp  →  pgqueue
-LangSmith Fleets    →  ailtir-mcp (HTTPS, uvicorn)  →  api-mcp  →  pgqueue
+MCP client (stdio)  →  ailtir-mcp (stdio, FastMCP)  →  api-mcp  →  god
+LangSmith Fleets    →  ailtir-mcp (HTTPS, uvicorn)  →  api-mcp  →  god
 ```
 
 ## Tech Stack
@@ -132,7 +132,7 @@ The `upload` tool uses a **register-first** pattern to get a server-assigned
 3. Return `kb_id`
 
 Do **not** pre-generate `kb_id` locally — the S3 path format
-`kbs/{tenant_id}/{kb_id}/` is owned by api-mcp/knowledge-base service.
+`kbs/{tenant_id}/{kb_id}/` is owned by api-mcp/god.
 
 ## Adding a New Tool
 

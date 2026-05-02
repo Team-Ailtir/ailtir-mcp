@@ -152,11 +152,11 @@ chat(kb_id: string, question: string) → answer: string
 - [MCP specification][mcp]
 - [uv][uv]
 - [Claude Desktop][claude-desktop]
-- [mcp-api service][mcp-api] (the backend this server talks to)
+- [api-mcp service][api-mcp] (the backend this server talks to)
 
 [ailtir]: https://ailtir.ai
 [mcp]: https://modelcontextprotocol.io
 [uv]: https://docs.astral.sh/uv/
 [claude-desktop]: https://claude.ai/download
 [bedrock]: https://aws.amazon.com/bedrock/
-[mcp-api]: ../mcp-api/README.md
+[api-mcp]: https://github.com/Team-Ailtir/api-mcp
