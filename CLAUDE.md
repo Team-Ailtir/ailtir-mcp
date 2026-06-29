@@ -147,7 +147,7 @@ Tool conventions:
 - Get the token: `token = get_token()` (import from `ailtir_mcp.auth`)
 - Get the http client: `ctx.request_context.lifespan_context.http`
 - Return `str` for simple results. Use a `pydantic.BaseModel` subclass for structured output.
-- Call `resp.raise_for_status()` on mcp-api responses; the SDK catches the exception
+- Call `resp.raise_for_status()` on api-mcp responses; the SDK catches the exception
   and returns it to the client as `isError: true`.
 
 ## Local Development
@@ -183,7 +183,7 @@ Tool functions are plain `async def` — call them directly with a mocked `ctx`:
 
 @respx.mock
 async def test_chat_success(mock_ctx):
-    respx.post("http://test-mcp-api/api-mcp/kb/kb-123/chat").mock(
+    respx.post("http://test-mcp-api/api-mcp/kbs/kb-123/chat").mock(
         return_value=Response(200, json={"answer": "The deadline is 31 March."})
     )
     result = await chat("kb-123", "When?", mock_ctx)
@@ -236,4 +236,4 @@ All variables are required (no defaults) except `AILTIR_MCP_API_TOKEN`.
 - **Infrastructure**: see `../infrastructure/src/service_ailtir_mcp.py`
 
 [readme]: README.md
-[mcp-api]: ../mcp-api/README.md
+[api-mcp]: ../api-mcp/README.md
