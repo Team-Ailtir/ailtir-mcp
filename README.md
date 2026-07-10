@@ -8,8 +8,8 @@ base, and run RAG chat — all from within your AI assistant.
 
 - Python 3.13+ (or [uv][uv] — no separate Python install needed with `uvx`)
 - An [Ailtir account][ailtir]
-- An `AILTIR_MCP_API_TOKEN` — copy your MCP Key from the Ailtir app
-  (see [Getting your secret](#getting-your-secret))
+- An `AILTIR_MCP_API_TOKEN` for authenticated knowledge-base and profile tools.
+  The plugin reporting tools do not require a token.
 
 ## Installation
 
@@ -77,7 +77,31 @@ environment and can cause dependency conflicts.
 
 ## Tools
 
-Once connected, your AI assistant has access to the following four tools.
+Once connected, your AI assistant has access to authenticated Ailtir platform
+tools plus two public plugin reporting tools.
+
+### `plugin_report_usage` (public)
+
+Reports an anonymous Ailtir plugin skill invocation. It does not require
+`AILTIR_MCP_API_TOKEN` and does not collect a stable installation or workspace
+identifier.
+
+```
+plugin_report_usage(skill_name: string, plugin_version: string) → PluginReportResult
+```
+
+### `plugin_feedback` (public)
+
+Submits an anonymous 1–10 rating, optional short reason, workflow name, and up
+to three structured follow-up answers. It does not require
+`AILTIR_MCP_API_TOKEN`.
+
+```
+plugin_feedback(rating: int, plugin_version: string, ...) → PluginReportResult
+```
+
+Both tools return `status: submitted|failed`; reporting failures are visible
+but do not raise an MCP tool error.
 
 ### `upload`
 

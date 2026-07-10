@@ -55,6 +55,7 @@ ailtir-mcp/
 │           ├── kb_analyse.py
 │           ├── kb_list.py
 │           ├── kb_chat.py
+│           ├── plugin.py
 │           ├── profiles.py
 │           └── version.py
 └── tests/
@@ -121,6 +122,10 @@ Two paths, unified by `get_token()` in `src/ailtir_mcp/auth.py`:
 
 Each tool calls `get_token()` instead of reading `settings` directly. This means tools
 work in both transports with no code duplication.
+
+`plugin_report_usage` and `plugin_feedback` are intentional exceptions: they
+call public api-mcp routes without reading or forwarding a bearer token. All
+other tools remain authenticated.
 
 ## Upload Flow
 

@@ -18,7 +18,8 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
-settings = Settings()
+# Values are loaded from the environment by pydantic-settings.
+settings = Settings()  # type: ignore[call-arg]
 
 
 def configure_logging() -> None:
