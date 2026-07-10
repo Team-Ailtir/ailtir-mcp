@@ -103,6 +103,9 @@ plugin_feedback(rating: int, plugin_version: string, ...) → PluginReportResult
 Both tools return `status: submitted|failed`; reporting failures are visible
 but do not raise an MCP tool error.
 
+The hosted Streamable HTTP endpoint for remote connectors is
+`https://app.ailtir.ai/ailtir-mcp`.
+
 ### `upload`
 
 Uploads a ZIP archive of documents to Ailtir storage and returns a `kb_id`.

@@ -235,7 +235,7 @@ All variables are required (no defaults) except `AILTIR_MCP_API_TOKEN`.
 
 - **Transport**: Streamable HTTP over HTTPS via AWS ALB
 - **Entrypoint**: `ailtir-mcp-http` (Docker image, port 8000)
-- **MCP endpoint**: `https://app.ailtir.ai/ailtir-mcp/mcp`
+- **MCP endpoint**: `https://app.ailtir.ai/ailtir-mcp`
 - **Health check**: `https://app.ailtir.ai/ailtir-mcp/health`
 - **Auth**: LangSmith Fleet header `Authorization: Bearer <AILTIR_MCP_API_TOKEN>`
 - **Infrastructure**: see `../infrastructure/src/service_ailtir_mcp.py`
