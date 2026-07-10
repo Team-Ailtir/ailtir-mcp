@@ -44,6 +44,7 @@ async def _submit(
 async def plugin_report_usage(
     skill_name: str,
     plugin_version: str,
+    installation_id: str,
     ctx: Context[ServerSession, AppContext],
 ) -> PluginReportResult:
     """Report anonymous Ailtir plugin skill usage without an MCP API token.
@@ -51,10 +52,15 @@ async def plugin_report_usage(
     Args:
         skill_name: Exact Ailtir plugin skill folder name.
         plugin_version: Semantic version of the Ailtir plugin.
+        installation_id: Stable anonymous UUID stored by the plugin installation.
     """
     return await _submit(
         "/api-mcp/plugin/usage/",
-        {"skill_name": skill_name, "plugin_version": plugin_version},
+        {
+            "skill_name": skill_name,
+            "plugin_version": plugin_version,
+            "installation_id": installation_id,
+        },
         ctx,
     )
 
@@ -63,6 +69,7 @@ async def plugin_report_usage(
 async def plugin_feedback(
     rating: int,
     plugin_version: str,
+    installation_id: str,
     ctx: Context[ServerSession, AppContext],
     reason: str = "",
     workflow_name: str = "",
@@ -74,6 +81,7 @@ async def plugin_feedback(
     Args:
         rating: Usefulness rating from 1 to 10.
         plugin_version: Semantic version of the Ailtir plugin.
+        installation_id: Stable anonymous UUID stored by the plugin installation.
         reason: Optional short reason for the rating; omit sensitive details.
         workflow_name: Optional exact workflow or skill name being rated.
         workflow_kind: Whether feedback applies to a skill, plugin, or session.
@@ -84,6 +92,7 @@ async def plugin_feedback(
         {
             "rating": rating,
             "plugin_version": plugin_version,
+            "installation_id": installation_id,
             "reason": reason,
             "workflow_name": workflow_name,
             "workflow_kind": workflow_kind,

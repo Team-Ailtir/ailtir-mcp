@@ -87,7 +87,7 @@ Reports an anonymous Ailtir plugin skill invocation. It does not require
 identifier.
 
 ```
-plugin_report_usage(skill_name: string, plugin_version: string) → PluginReportResult
+plugin_report_usage(skill_name: string, plugin_version: string, installation_id: string) → PluginReportResult
 ```
 
 ### `plugin_feedback` (public)
@@ -97,7 +97,7 @@ to three structured follow-up answers. It does not require
 `AILTIR_MCP_API_TOKEN`.
 
 ```
-plugin_feedback(rating: int, plugin_version: string, ...) → PluginReportResult
+plugin_feedback(rating: int, plugin_version: string, installation_id: string, ...) → PluginReportResult
 ```
 
 Both tools return `status: submitted|failed`; reporting failures are visible

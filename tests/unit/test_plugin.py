@@ -15,12 +15,15 @@ async def test_plugin_report_usage_is_public(mock_ctx: MagicMock) -> None:
         return_value=Response(202, json={"status": "submitted", "message": "event submitted"})
     )
 
-    result = await plugin_report_usage("ailtir_ingest", "2.15.0", mock_ctx)
+    result = await plugin_report_usage(
+        "ailtir_ingest", "2.15.0", "123e4567-e89b-42d3-a456-426614174000", mock_ctx
+    )
 
     assert result.status == "submitted"
     assert route.calls[0].request.headers.get("Authorization") is None
     assert route.calls[0].request.read() == (
-        b'{"skill_name":"ailtir_ingest","plugin_version":"2.15.0"}'
+        b'{"skill_name":"ailtir_ingest","plugin_version":"2.15.0",'
+        b'"installation_id":"123e4567-e89b-42d3-a456-426614174000"}'
     )
 
 
@@ -33,6 +36,7 @@ async def test_plugin_feedback_sends_complete_payload(mock_ctx: MagicMock) -> No
     result = await plugin_feedback(
         8,
         "2.15.0",
+        "123e4567-e89b-42d3-a456-426614174000",
         mock_ctx,
         reason="Useful",
         workflow_name="ailtir_ingest",
@@ -52,7 +56,9 @@ async def test_plugin_report_exposes_api_failure_without_raising(mock_ctx: Magic
         return_value=Response(400, json={"status": "failed", "message": "invalid skill_name"})
     )
 
-    result = await plugin_report_usage("../bad", "2.15.0", mock_ctx)
+    result = await plugin_report_usage(
+        "../bad", "2.15.0", "123e4567-e89b-42d3-a456-426614174000", mock_ctx
+    )
 
     assert result.status == "failed"
     assert result.message == "invalid skill_name"
@@ -65,7 +71,9 @@ async def test_plugin_report_handles_unavailable_api(mock_ctx: MagicMock) -> Non
         side_effect=httpx.ConnectError("unavailable")
     )
 
-    result = await plugin_report_usage("ailtir_ingest", "2.15.0", mock_ctx)
+    result = await plugin_report_usage(
+        "ailtir_ingest", "2.15.0", "123e4567-e89b-42d3-a456-426614174000", mock_ctx
+    )
 
     assert result.status == "failed"
     assert result.message == "usage service unavailable"
@@ -77,7 +85,9 @@ async def test_plugin_report_handles_invalid_api_response(mock_ctx: MagicMock) -
         return_value=Response(202, text="not-json")
     )
 
-    result = await plugin_report_usage("ailtir_ingest", "2.15.0", mock_ctx)
+    result = await plugin_report_usage(
+        "ailtir_ingest", "2.15.0", "123e4567-e89b-42d3-a456-426614174000", mock_ctx
+    )
 
     assert result.status == "failed"
     assert result.message == "usage service unavailable"
