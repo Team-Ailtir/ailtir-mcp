@@ -7,4 +7,4 @@ COPY src/ ./src/
 RUN uv sync --no-dev --frozen
 ENV MCP_MOUNT_PATH=/ailtir-mcp
 EXPOSE 8000
-CMD ["uv", "run", "--no-dev", "ailtir-mcp-http"]
+CMD ["uv", "run", "--frozen", "--no-dev", "ailtir-mcp-http"]
