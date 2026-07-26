@@ -19,8 +19,16 @@ def mock_http() -> httpx.AsyncClient:
 
 
 @pytest.fixture
-def app_context(mock_http: httpx.AsyncClient) -> AppContext:
-    return AppContext(http=mock_http)
+def mock_god() -> httpx.AsyncClient:
+    # respx intercepts calls on this client inside individual tests.
+    return httpx.AsyncClient(
+        base_url="http://test-god", headers={"Authorization": "Bearer test-god-token"}
+    )
+
+
+@pytest.fixture
+def app_context(mock_http: httpx.AsyncClient, mock_god: httpx.AsyncClient) -> AppContext:
+    return AppContext(http=mock_http, god=mock_god)
 
 
 @pytest.fixture

@@ -9,3 +9,4 @@ chat from within your AI assistant.
 - [Installation](installation.md) — install uv and get your MCP key
 - [Configuration](configuration.md) — connect the plugin to Claude Code or Claude Desktop
 - [Usage](usage.md) — available tools and typical workflow
+- [Tender discovery tools](tender-discovery.md) — system-path tools backing the Phase 0 tender-discovery pipeline
