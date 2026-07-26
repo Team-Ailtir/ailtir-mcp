@@ -16,10 +16,24 @@ The Ailtir MCP server. For user-facing installation and tool docs, see the
 
 Both transports share the same FastMCP instance and tool implementations.
 
+There are two distinct call paths, for two distinct kinds of caller:
+
 ```
-MCP client (stdio)  →  ailtir-mcp (stdio, FastMCP)  →  api-mcp  →  god
-LangSmith Fleets    →  ailtir-mcp (HTTPS, uvicorn)  →  api-mcp  →  god
+MCP client (stdio)  →  ailtir-mcp (stdio, FastMCP)  →  api-mcp  →  god   (per-user, AILTIR_MCP_API_TOKEN)
+LangSmith Fleets    →  ailtir-mcp (HTTPS, uvicorn)  →  api-mcp  →  god   (per-user, AILTIR_MCP_API_TOKEN)
+Paperclip skill (discovery/scoring, no user)        →  ailtir-mcp  →  god   (system, GOD_SERVICE_TOKEN)
 ```
+
+Per-user tools (profile CRUD, KB upload/analyse/chat/list) go through
+`api-mcp`, which resolves the caller's identity from `AILTIR_MCP_API_TOKEN`
+and adds `tenant_id`/`user_id` server-side. System/automation tools — the
+Phase 0 tender-discovery tools in `tools/tender_notice.py`,
+`tools/fit_score.py`, `tools/poll_log.py`, `tools/setting.py`, and
+`tools/profile_fit_config.py` — have no logged-in user to resolve, so they
+call `god` directly with the shared `GOD_SERVICE_TOKEN`, the same pattern
+`god`'s `tenderinfo` handler already used. Any *new* user-invocable tool
+should go through `api-mcp`; any new tool called by a scheduled Paperclip
+skill should go direct to `god`.
 
 ## Tech Stack
 
@@ -57,15 +71,25 @@ ailtir-mcp/
 │           ├── kb_chat.py
 │           ├── plugin.py
 │           ├── profiles.py
+│           ├── tender_notice.py        # system path: tender_notice_upsert/classify/list/get
+│           ├── fit_score.py            # system path: fit_score_upsert/list/set_narrative
+│           ├── poll_log.py             # system path: poll_log_create/list
+│           ├── setting.py              # system path: setting_get/set
+│           ├── profile_fit_config.py   # system path: profile_get_fit_config/set_fit_config
 │           └── version.py
 └── tests/
     └── unit/
-        ├── conftest.py           # mock_ctx, app_context fixtures; reset_bearer_token autouse
+        ├── conftest.py           # mock_ctx, app_context fixtures (http + god clients); reset_bearer_token autouse
         ├── test_upload.py
         ├── test_analyse.py
         ├── test_list_kbs.py
         ├── test_chat.py
         ├── test_profiles.py
+        ├── test_tender_notice.py
+        ├── test_fit_score.py
+        ├── test_poll_log.py
+        ├── test_setting.py
+        ├── test_profile_fit_config.py
         └── test_server_http.py
 ```
 
@@ -90,7 +114,9 @@ class BearerTokenMiddleware:
 ```python
 @dataclass
 class AppContext:
-    http: httpx.AsyncClient  # shared client for api-mcp calls
+    http: httpx.AsyncClient  # shared client for api-mcp calls (per-user tools)
+    god: httpx.AsyncClient   # shared client for direct god calls (system-path tools),
+                             # pre-authenticated with GOD_SERVICE_TOKEN at construction
 
 mcp = FastMCP("ailtir-mcp", lifespan=_lifespan)
 ```
@@ -149,11 +175,23 @@ Do **not** pre-generate `kb_id` locally — the S3 path format
 Tool conventions:
 - Use `async def`; inject `ctx: Context[ServerSession, AppContext]` as the last parameter.
 - Use `await ctx.info/debug/error()` for logging inside tools (sent to MCP client).
+- Return `str` for simple results. Use a `pydantic.BaseModel` subclass for structured output.
+- Call `resp.raise_for_status()` on responses; the SDK catches the exception
+  and returns it to the client as `isError: true`.
+
+For a **per-user** tool (calls `api-mcp`):
 - Get the token: `token = get_token()` (import from `ailtir_mcp.auth`)
 - Get the http client: `ctx.request_context.lifespan_context.http`
-- Return `str` for simple results. Use a `pydantic.BaseModel` subclass for structured output.
-- Call `resp.raise_for_status()` on api-mcp responses; the SDK catches the exception
-  and returns it to the client as `isError: true`.
+- Pass `headers={"Authorization": f"Bearer {token}"}` on every request.
+
+For a **system-path** tool (calls `god` directly — no logged-in user, e.g. a
+scheduled discovery/scoring skill):
+- Get the god client: `ctx.request_context.lifespan_context.god` — it is
+  already authenticated with `GOD_SERVICE_TOKEN` from `mcp.py`'s lifespan, so
+  do not set an `Authorization` header per-request.
+- Model the response shape with a `pydantic.BaseModel`, and pass
+  `Model.model_validate(resp.json())` rather than hand-parsing the JSON —
+  see `tools/tender_notice.py` for the pattern.
 
 ## Local Development
 
@@ -207,6 +245,17 @@ def test_uses_header_token(mock_ctx):
 
 The `autouse` `reset_bearer_token` fixture clears `_bearer_token` before every test.
 
+System-path tools use the `mock_god` fixture (also part of `app_context`) instead
+of `mock_http`:
+
+```python
+@respx.mock
+async def test_tender_notice_get_success(mock_ctx):
+    respx.get("http://test-god/tender-notices/n1").mock(return_value=Response(200, json=NOTICE))
+    result = await tender_notice_get(notice_id="n1", ctx=mock_ctx)
+    assert result.id == "n1"
+```
+
 ## Config
 
 All settings are read from environment variables (no `.env` file in production).
@@ -217,6 +266,8 @@ All variables are required (no defaults) except `AILTIR_MCP_API_TOKEN`.
 |----------|---------|-------------|
 | `AILTIR_MCP_API_TOKEN` | `""` | Per-user bearer token (stdio); not used for HTTP transport |
 | `API_MCP_URL` | `https://app.ailtir.ai/api-mcp` | api-mcp base URL |
+| `GOD_URL` | `https://god.internal:8000` | god base URL, for system-path tools |
+| `GOD_SERVICE_TOKEN` | `""` | Shared service token gating god's system-path write endpoints |
 | `MCP_HOST` | `0.0.0.0` | Bind host for HTTP transport |
 | `MCP_PORT` | `8000` | Bind port for HTTP transport |
 | `MCP_MOUNT_PATH` | `/ailtir-mcp` | URL prefix for HTTP transport (set to `/mcp` locally) |

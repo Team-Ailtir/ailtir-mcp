@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     log_format: str
     log_level: str
     api_mcp_url: str
+    god_url: str
+    god_service_token: str
     mcp_host: str
     mcp_port: int
     mcp_mount_path: str
