@@ -7,7 +7,6 @@ from starlette.routing import Route
 from starlette.types import ASGIApp
 
 import ailtir_mcp.tools  # noqa: F401 — registers all tools with mcp instance
-from ailtir_mcp.auth import BearerTokenMiddleware
 from ailtir_mcp.config import configure_logging, settings
 from ailtir_mcp.mcp import mcp
 
@@ -19,8 +18,7 @@ async def health(_: Request) -> JSONResponse:
 def create_app() -> ASGIApp:
     mcp.settings.streamable_http_path = settings.mcp_mount_path
     mcp._custom_starlette_routes.append(Route(f"{settings.mcp_mount_path}/health", health))
-    # Wrap at raw ASGI level — lifespan scope passes through transparently.
-    return BearerTokenMiddleware(mcp.streamable_http_app())
+    return mcp.streamable_http_app()
 
 
 def main() -> None:

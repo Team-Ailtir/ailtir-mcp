@@ -4,13 +4,11 @@ import httpx
 import respx
 from httpx import Response
 
-from ailtir_mcp.auth import _bearer_token
 from ailtir_mcp.tools.plugin import plugin_feedback, plugin_report_usage
 
 
 @respx.mock
 async def test_plugin_report_usage_is_public(mock_ctx: MagicMock) -> None:
-    _bearer_token.set(None)
     route = respx.post("http://test-mcp-api/api-mcp/plugin/usage/").mock(
         return_value=Response(202, json={"status": "submitted", "message": "event submitted"})
     )

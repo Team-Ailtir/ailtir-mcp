@@ -23,7 +23,6 @@ async def _lifespan(server: FastMCP) -> typing.AsyncIterator[AppContext]:
         "ailtir_mcp.starting",
         api_mcp_url=settings.api_mcp_url,
         mcp_mount_path=settings.mcp_mount_path,
-        token_set=bool(settings.ailtir_mcp_api_token),
         log_level=settings.log_level,
     )
     async with httpx.AsyncClient(base_url=settings.api_mcp_url, timeout=30.0) as http:

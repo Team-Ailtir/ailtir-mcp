@@ -2,12 +2,10 @@ import logging
 import sys
 
 import structlog
-from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    ailtir_mcp_api_token: str = Field(default="")
     log_format: str
     log_level: str
     api_mcp_url: str
