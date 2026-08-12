@@ -7,18 +7,31 @@
 # GET /orgs/{org}/packages/container/{name}, which is documented for read:packages and not for
 # GITHUB_TOKEN.
 #
-# Measured against ghcr.io on 2026-08-12: the anonymous token endpoint answers 200 with a token for
-# a publicly pullable package (actions/actions-runner, homebrew/core/git) and 403 DENIED for one
-# that is private or does not exist (team-ailtir/api-mcp, team-ailtir/ailtir-mcp, and a name made
-# up on the spot). 401 has never been observed and is NOT accepted: a uniform "authentication
-# required" answer is what an intercepting proxy, an egress throttle, or a change at ghcr.io looks
-# like, and accepting it would report every package as safe.
+# Measured against ghcr.io on 2026-08-12, across the first publish of ghcr.io/team-ailtir/ailtir-mcp
+# and of ghcr.io/team-ailtir/api-mcp. The anonymous token endpoint answers:
+#   200  publicly pullable                     homebrew/core/git, actions/actions-runner
+#   401  exists, not anonymously pullable      both packages AFTER their first publish
+#   403  no such package                       both packages BEFORE it, and a made-up name
+# An earlier header read 403 as "private or does not exist". It was written when no team-ailtir
+# package existed, so it only ever observed ABSENT, and it is now known false: a private package
+# answers 401. Verified at the same time that 401 really is private and not a broken read: no
+# anonymous token can be minted for either package, and the control's anonymous token is refused
+# against both, while it fetches the control's own tag list.
 #
-# Two caps, stated rather than implied. It does not distinguish private from absent, which is
-# correct for this question (nothing that does not exist is exposed) but is NOT a test of
-# existence, so it cannot notice that it has been aimed at the wrong package: the caller is
-# responsible for passing the same name it publishes. And it says nothing about who inside the org
-# can pull.
+# 401 and 403 are both accepted, and the positive control below is the whole reason that is safe.
+# An earlier version accepted 401 with no control, and a review blocked it correctly: anything that
+# answers every request alike (an intercepting proxy, an egress throttle, a change at ghcr.io)
+# would turn this into an unconditional pass that still printed ok. The control answering 200 first
+# is what rules that out. What that reasoning got wrong was the further inference that 401 carries
+# no information. It means "exists, not anonymously pullable", which is the normal and safe state
+# of every package published here, so refusing it reds the publish job on every run after the
+# first, which is what it did.
+#
+# Two caps, stated rather than implied. The accepted statuses differ from each other and both are
+# echoed, so the log says which one arrived, but neither is refused: this is NOT a test of
+# existence, so it cannot notice that it has been aimed at the wrong package, because an absent one
+# answers 403 and reads as ok. The caller is responsible for passing the same name it publishes.
+# And it says nothing about who inside the org can pull.
 set -euo pipefail
 
 pkg="${1:?usage: ghcr-not-public.sh <owner>/<package>}"
@@ -47,7 +60,7 @@ if ! status="$(status_for "$pkg")"; then
 fi
 
 case "$status" in
-403)
+401 | 403)
 	echo "ok: ghcr.io/${pkg} is not anonymously pullable (token endpoint HTTP ${status})"
 	;;
 200)
