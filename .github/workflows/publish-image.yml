@@ -1,16 +1,23 @@
 name: Publish image
 
+# No workflow_dispatch: a dispatch names its own ref, so it would publish an image built from a
+# branch code-quality.yml never ran on. With these triggers, `push` means `main` and nothing else.
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
-  workflow_dispatch:
 
 jobs:
   ghcr:
     name: Publish image to GHCR
     runs-on: ubuntu-latest
+
+    # One name for the image the probe checks and the push creates. Separate literals can diverge,
+    # and the probe cannot notice: an absent package answers the same 403 a private one does, so a
+    # probe aimed at a name nothing publishes reads as safe.
+    env:
+      IMAGE: team-ailtir/ailtir-mcp
 
     permissions:
       contents: read
@@ -25,20 +32,26 @@ jobs:
       # interlocked on a repository variable an owner sets by hand, after either disabling public
       # package creation for the org or accepting that the image is world-pullable. Once the
       # package exists and is private, the probe below is what holds the line.
-      - if: ${{ github.event_name != 'pull_request' && vars.GHCR_ALLOW_FIRST_PUBLISH != 'true' }}
+      - if: ${{ github.event_name == 'push' && vars.GHCR_ALLOW_FIRST_PUBLISH != 'true' }}
         run: |
           echo "REFUSED: this repository is public, so publishing would create a PUBLIC" >&2
-          echo "ghcr.io/team-ailtir/ailtir-mcp package exposing an internal service image." >&2
+          echo "ghcr.io/${IMAGE} package exposing an internal service image." >&2
+          echo "Nothing here verifies step 1: this variable records only that an owner said yes." >&2
+          echo "If step 1 was skipped, the package is created PUBLIC, the post-push probe reports" >&2
+          echo "it AFTER the image is already world-pullable, and only an org owner can undo it." >&2
           echo "Remedy, in this order:" >&2
           echo "  1. org owner sets Packages -> Package creation -> Public to disabled at" >&2
           echo "     https://github.com/organizations/Team-Ailtir/settings/packages" >&2
-          echo "  2. org owner sets repository variable GHCR_ALLOW_FIRST_PUBLISH=true at" >&2
-          echo "     https://github.com/Team-Ailtir/ailtir-mcp/settings/variables/actions" >&2
+          echo "  2. org owner confirms step 1 landed, then sets the REPOSITORY variable" >&2
+          echo "     GHCR_ALLOW_FIRST_PUBLISH=true at" >&2
+          echo "     https://github.com/Team-Ailtir/ailtir-mcp/settings/variables/actions." >&2
+          echo "     vars merges org-level and repository-level variables, so an ORG variable of" >&2
+          echo "     this name satisfies this interlock in every repository carrying this workflow." >&2
           echo "  3. re-run this workflow, and confirm the package reads Private afterwards" >&2
           exit 1
 
       # Before the push, so a package that has become public is never added to.
-      - run: .github/scripts/ghcr-not-public.sh team-ailtir/ailtir-mcp
+      - run: .github/scripts/ghcr-not-public.sh "$IMAGE"
 
       - uses: docker/setup-buildx-action@v3
 
@@ -55,10 +68,10 @@ jobs:
         with:
           context: .
           platforms: linux/amd64
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ghcr.io/team-ailtir/ailtir-mcp:${{ github.sha }}
+          push: ${{ github.event_name == 'push' }}
+          tags: ghcr.io/${{ env.IMAGE }}:${{ github.sha }}
           provenance: false
           sbom: false
 
-      - if: ${{ github.event_name != 'pull_request' }}
-        run: .github/scripts/ghcr-not-public.sh team-ailtir/ailtir-mcp
+      - if: ${{ github.event_name == 'push' }}
+        run: .github/scripts/ghcr-not-public.sh "$IMAGE"
