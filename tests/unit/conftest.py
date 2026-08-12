@@ -3,13 +3,7 @@ from unittest.mock import AsyncMock, MagicMock
 import httpx
 import pytest
 
-from ailtir_mcp.auth import _bearer_token
 from ailtir_mcp.mcp import AppContext
-
-
-@pytest.fixture(autouse=True)
-def reset_bearer_token() -> None:
-    _bearer_token.set(None)
 
 
 @pytest.fixture
