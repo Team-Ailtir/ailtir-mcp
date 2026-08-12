@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
 
     # One name for the image the probe checks and the push creates. Separate literals can diverge,
-    # and the probe cannot notice: an absent package answers the same 403 a private one does, so a
+    # and the probe cannot notice: an absent package answers 403, which the probe accepts, so a
     # probe aimed at a name nothing publishes reads as safe.
     env:
       IMAGE: team-ailtir/ailtir-mcp
