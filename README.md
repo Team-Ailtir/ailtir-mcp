@@ -30,13 +30,13 @@ ailtir-mcp
 ```
 
 The hosted Streamable HTTP endpoint is
-`https://app.ailtir.ai/ailtir-mcp`. It is anonymous.
+`https://mcp.62.238.51.124.sslip.io/ailtir-mcp`. It is anonymous.
 
 ## Configuration
 
 | Variable | Purpose |
 |----------|---------|
-| `API_MCP_URL` | Private telemetry relay base URL |
+| `API_MCP_URL` | Telemetry relay base URL |
 | `MCP_HOST` | HTTP bind host |
 | `MCP_PORT` | HTTP bind port |
 | `MCP_MOUNT_PATH` | Streamable HTTP path |

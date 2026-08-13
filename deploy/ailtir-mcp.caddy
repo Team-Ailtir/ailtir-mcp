@@ -1,0 +1,3 @@
+mcp.62.238.51.124.sslip.io {
+	reverse_proxy ailtir-mcp:8000
+}
