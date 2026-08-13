@@ -4,7 +4,7 @@ requires-python = ">=3.13"
 
 [[package]]
 name = "ailtir-mcp"
-version = "2.1.2"
+version = "2.1.3"
 source = { editable = "." }
 dependencies = [
     { name = "httpx" },
@@ -29,7 +29,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "httpx", specifier = ">=0.28.1" },
-    { name = "mcp", extras = ["cli"], specifier = ">=1.9.0" },
+    { name = "mcp", extras = ["cli"], specifier = ">=1.9.0,<2" },
     { name = "pydantic-settings", specifier = ">=2.10.1" },
     { name = "starlette", specifier = ">=0.46.0" },
     { name = "structlog", specifier = ">=25.4.0" },
