@@ -1,0 +1,107 @@
+name: Deploy to Hetzner
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Published stable vX.Y.Z release tag to redeploy or roll back
+        required: true
+        type: string
+
+concurrency:
+  group: ailtir-mcp-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.event_name == 'workflow_dispatch' || !github.event.release.prerelease
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      # Resolve releases only with the workflow and resolver from the trusted
+      # default branch. A workflow_dispatch caller-selected ref must never
+      # supply code that decides what root executes on the production box.
+      - name: Checkout trusted release resolver
+        uses: actions/checkout@v4
+        with:
+          ref: refs/heads/main
+          fetch-depth: 0
+
+      - name: Resolve immutable production image
+        id: image
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEPLOY_REF: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.ref }}
+        run: |
+          set -euo pipefail
+          git fetch --force origin main --tags
+
+          sha=$(.github/scripts/resolve-release-image.sh "$DEPLOY_REF")
+          echo "sha=$sha" >>"$GITHUB_OUTPUT"
+          echo "image=ghcr.io/team-ailtir/ailtir-mcp:$sha" >>"$GITHUB_OUTPUT"
+
+      # Keep the connection helper from trusted main. An older release bundle
+      # may predate the bastion transport but must remain a valid rollback target.
+      - name: Preserve trusted SSH helper
+        run: install -m 0755 .github/scripts/write-deploy-ssh-config.sh "$RUNNER_TEMP/write-deploy-ssh-config.sh"
+
+      # The versioned deployment bundle is itself release content. Check out
+      # exactly the same commit used for the immutable image, then assert it
+      # before copying any root-executed files to the box.
+      - name: Checkout resolved release bundle
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.image.outputs.sha }}
+          fetch-depth: 1
+
+      - name: Verify deployment bundle commit
+        env:
+          EXPECTED_SHA: ${{ steps.image.outputs.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+
+      - name: Sync production definition and deploy exact image
+        env:
+          BASTION_HOST: ${{ secrets.BASTION_HOST }}
+          BASTION_KNOWN_HOSTS: ${{ secrets.BASTION_KNOWN_HOSTS }}
+          BASTION_SSH_KEY: ${{ secrets.BASTION_SSH_KEY }}
+          BASTION_USER: gh198866000
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          IMAGE: ${{ steps.image.outputs.image }}
+          GHCR_TOKEN: ${{ github.token }}
+          GHCR_USER: ${{ github.actor }}
+          DEPLOYMENT_ID: ${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          umask 077
+          bastion_key=$(mktemp "${RUNNER_TEMP:-/tmp}/bastion-key.XXXXXX")
+          config=$(mktemp "${RUNNER_TEMP:-/tmp}/deploy-ssh-config.XXXXXX")
+          key=$(mktemp "${RUNNER_TEMP:-/tmp}/deploy-key.XXXXXX")
+          hosts=$(mktemp "${RUNNER_TEMP:-/tmp}/deploy-hosts.XXXXXX")
+          staging=
+          cleanup() {
+            if [[ -n "$staging" ]]; then
+              ssh -F "$config" ailtir-box "rm -rf -- '$staging'" || true
+            fi
+            rm -f "$bastion_key" "$config" "$key" "$hosts"
+          }
+          trap cleanup EXIT INT TERM HUP
+          printf '%s\n' "$BASTION_SSH_KEY" >"$bastion_key"
+          printf '%s\n' "$DEPLOY_SSH_KEY" >"$key"
+          printf '%s\n%s\n' "$BASTION_KNOWN_HOSTS" "$DEPLOY_KNOWN_HOSTS" >"$hosts"
+          "$RUNNER_TEMP/write-deploy-ssh-config.sh" "$config" "$hosts" "$bastion_key" "$key"
+
+          staging=$(ssh -F "$config" ailtir-box \
+            'install -d -m 0755 /opt/ailtir-mcp/incoming /opt/ailtir-mcp/releases /opt/ailtir/caddy.d && mktemp -d /opt/ailtir-mcp/incoming/deploy.XXXXXX')
+          scp -F "$config" deploy/docker-compose.yml deploy/ailtir-mcp.caddy \
+            deploy/deploy.sh deploy/authenticated-deploy.sh "ailtir-box:$staging/"
+          ssh -F "$config" ailtir-box \
+            "chmod 0755 '$staging/deploy.sh' '$staging/authenticated-deploy.sh'"
+          printf '%s\n' "$GHCR_TOKEN" | ssh -F "$config" ailtir-box \
+            "'$staging/authenticated-deploy.sh' '$IMAGE' '$GHCR_USER' '$DEPLOYMENT_ID'"

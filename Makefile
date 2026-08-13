@@ -12,7 +12,7 @@ help: ## Show help for all targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
 .PHONY: checks
-checks: format-check lint-check type-check security-check ## Run all checks
+checks: format-check lint-check type-check security-check deploy-check ## Run all checks
 	@echo "All checks passed!"
 
 .PHONY: checks-fix
@@ -68,6 +68,15 @@ serve-http: ## Run the MCP HTTP (Streamable HTTP) server locally
 docker-build: ## Build the Docker image
 	docker build -t $(GIT_REPO) .
 	docker tag $(GIT_REPO):latest $(GIT_REPO):$(GIT_SHA)
+
+.PHONY: deploy-check
+deploy-check: ## Verify release resolution, SSH trust, Compose, and rollback behavior
+	.github/scripts/test-resolve-release-image.sh
+	.github/scripts/test-deploy-workflow.sh
+	deploy/test-deploy.sh
+	AILTIR_MCP_ENV_FILE=/dev/null \
+		AILTIR_MCP_IMAGE=ghcr.io/team-ailtir/ailtir-mcp:0123456789abcdef0123456789abcdef01234567 \
+		docker compose -f deploy/docker-compose.yml config --quiet
 
 .PHONY: docker-run
 docker-run: ## Run the HTTP server container locally (requires AILTIR_MCP_API_TOKEN)

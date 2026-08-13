@@ -1,0 +1,29 @@
+name: ailtir-mcp
+
+services:
+  ailtir-mcp:
+    image: ${AILTIR_MCP_IMAGE:?AILTIR_MCP_IMAGE must pin an immutable commit SHA image}
+    restart: unless-stopped
+    env_file: ${AILTIR_MCP_ENV_FILE:-/opt/ailtir-mcp/.env}
+    environment:
+      API_MCP_URL: http://api-mcp:8000
+      LOG_FORMAT: json
+      LOG_LEVEL: INFO
+      MCP_HOST: 0.0.0.0
+      MCP_MOUNT_PATH: /ailtir-mcp
+      MCP_PORT: '8000'
+    expose:
+      - '8000'
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -sf http://localhost:8000/ailtir-mcp/health || exit 1']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 5s
+    networks:
+      - ingress
+
+networks:
+  ingress:
+    external: true
+    name: ailtir-ingress
